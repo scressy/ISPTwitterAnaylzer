@@ -16,7 +16,7 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 
 #####Shaw ISP
 # Open/Create a file to append data
-csvFile = open('shaw.csv', 'a')
+csvFile = open('shaw.csv', 'w')
 #Use csv Writer
 csvWriter = csv.writer(csvFile)
 
@@ -28,7 +28,3 @@ for user in users:
                         user.id, user.followers_count,
                         user.description.encode('utf-8')])
     print (user.id)
-#
-# for tweet in tweepy.Cursor(api.get_user,screen_name = 'ShawHelp').items():
-#     print (tweet.created_at, tweet.text)
-#     csvWriter.writerow([tweet.created_at, tweet.text.encode('utf-8')])
