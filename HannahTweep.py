@@ -21,10 +21,10 @@ csvFile = open('shaw.csv', 'w')
 csvWriter = csv.writer(csvFile)
 
 users = ['ShawHelp','ShawInfo']
-#
+
 for user in users:
     user = api.get_user(screen_name = user)
     csvWriter.writerow([user.screen_name,
-                        user.id, user.followers_count,
+                        user.id, user.statuses_count,
                         user.description.encode('utf-8')])
     print (user.id)
