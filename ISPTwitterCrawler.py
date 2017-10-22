@@ -1,10 +1,13 @@
-#Twitter Crawler code from 
-#http://ipullrank.com/step-step-twitter-sentiment
+# coding: utf-8
+
+#Twitter Crawler code from
+#http: //ipullrank.com/step-step-twitter-sentiment
 #-analysis-visualizing-united-airlines-pr-crisis/
 
 import tweepy
 import csv
 import pandas as pd
+import got
 
 ####input your credentials here
 consumer_key = 'ejCkcbYsjKRCI6e125bJpG49x'
@@ -18,12 +21,11 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 
 #####Shaw ISP
 # Open/Create a file to append data
-csvFile = open(‘shaw.csv', 'a')
+csvFile = open("shawtags.csv", "w")
 #Use csv Writer
 csvWriter = csv.writer(csvFile)
 
-for tweet in tweepy.Cursor(api.search,q=“#Shaw”,count=100,
-                           lang="en",
-                           since="2017-04-03").items():
-    print (tweet.created_at, tweet.text)
-    csvWriter.writerow([tweet.created_at, tweet.text.encode('utf-8')])
+tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#ShawInternet').setSince("2016-10-21").setUntil("2017-10-21")
+tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+for tweet in tweets:
+    csvWriter.writerow([tweet.date, tweet.text.encode('utf-8')])
