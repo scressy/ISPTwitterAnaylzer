@@ -18,9 +18,11 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 
 #initialize a list to hold all the tweepy Tweets
 alltweets = []
+user_name = "ShawHelp"
+
 
 #make initial request for most recent tweets (200 is the maximum allowed count)
-new_tweets = api.user_timeline(screen_name = "ShawHelp",count=200)
+new_tweets = api.user_timeline(screen_name = user_name,count=200)
 
 #save most recent tweets
 alltweets.extend(new_tweets)
@@ -33,7 +35,7 @@ while len(new_tweets) > 0:
 	print ("getting tweets before %s" % (oldest))
 
 	#all subsiquent requests use the max_id param to prevent duplicates
-	new_tweets = api.user_timeline(screen_name = "ShawHelp",count=200,max_id=oldest)
+	new_tweets = api.user_timeline(screen_name = user_name,count=200,max_id=oldest)
 
 	#save most recent tweets
 	alltweets.extend(new_tweets)
@@ -47,7 +49,7 @@ while len(new_tweets) > 0:
 outtweets = [[tweet.id_str, tweet.created_at, tweet.text.encode("utf-8")] for tweet in alltweets]
 
 #write the csv
-with open('%s_tweets.csv' % "ShawHelp", 'wb') as f:
+with open('%s_tweets.csv' % user_name, 'wb') as f:
 	writer = csv.writer(f)
 	writer.writerow(["id","created_at","text"])
 	writer.writerows(outtweets)
