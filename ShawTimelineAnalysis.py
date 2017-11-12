@@ -22,6 +22,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
 
+# Source: http://www.geeksforgeeks.org/twitter-sentiment-analysis-using-python/
 def get_tweet_sentiment(tweet):
     '''
     Utility function to classify sentiment of passed tweet
@@ -37,41 +38,43 @@ def get_tweet_sentiment(tweet):
     else:
         return 'negative'
 
+def sentiment_numbers(ptweets,numNeutral,ntweets):
+    dictionary = plt.figure()
+    D = {'Positive':len(ptweets), 'Neutral':numNeutral, 'Negative':len(ntweets)}
+    plt.bar(range(len(D)), D.values(), align='center')
+    plt.xticks(range(len(D)), D.keys())
 
+    plt.show()
 
 # users = ['ShawHelp','ShawInfo']
 
 users = ['ShawHelp']
 
+for user in users:
+    tweetCriteria = got.manager.TweetCriteria().setUsername(user).setSince("2017-10-11").setUntil("2017-10-12")
+    tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 
-tweetCriteria = got.manager.TweetCriteria().setUsername('ShawHelp').setSince("2017-10-01").setUntil("2017-10-12")
-tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+    # picking positive tweets from tweets
+    ptweets = [tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'positive']
+    # percentage of positive tweets
+    print("Positive tweets percentage: {} %".format(100*len(ptweets)/len(tweets)))
+    # picking negative tweets from tweets
+    ntweets = [tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'negative']
+    # percentage of negative tweets
+    print("Negative tweets percentage: {} %".format(100*len(ntweets)/len(tweets)))
+    # percentage of neutral tweets
+    numNeutral = len(tweets)-len(ntweets)-len(ptweets)
+    print("Neutral tweets percentage: {} %".format(100*(numNeutral)/len(tweets)))
 
-# picking positive tweets from tweets
-ptweets = [tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'positive']
-# percentage of positive tweets
-print("Positive tweets percentage: {} %".format(100*len(ptweets)/len(tweets)))
-# picking negative tweets from tweets
-ntweets = [tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'negative']
-# percentage of negative tweets
-print("Negative tweets percentage: {} %".format(100*len(ntweets)/len(tweets)))
-# percentage of neutral tweets
-print("Neutral tweets percentage: {} %".format(100*(len(tweets)-len(ntweets)-len(ptweets))/len(tweets)))
-#
-# # printing first 5 positive tweets
-# print("\n\nPositive tweets:")
-# for tweet in ptweets[:10]:
-#     print(tweet['text'])
-# # printing first 5 negative tweets
-# print("\n\nNegative tweets:")
-# for tweet in ntweets[:10]:
-#     print(tweet['text'])
 
-#transform the tweepy tweets into a 2D array that will populate the csv
-# outtweets = [[tweet.id_str, tweet.created_at, tweet.text.encode("utf-8")] for tweet in tweets]
+    # printing first 5 positive tweets
+    # print("\n\nPositive tweets:")
+    # for tweet in ptweets[:10]:
+    #     print(tweet.text)
+    # # printing first 5 negative tweets
+    # print("\n\nNegative tweets:")
+    # for tweet in ntweets[:10]:
+    #     print(tweet.text)
 
-    # #write the csv
-    # with open('%s_tweets.csv' % user, 'wb') as f:
-    # 	writer = csv.writer(f)
-    # 	writer.writerow(["id","created_at","text"])
-    # 	writer.writerows(outtweets)
+
+    sentiment_numbers(ptweets,numNeutral,ntweets)
