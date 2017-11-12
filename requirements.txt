@@ -5,3 +5,5 @@ pyquery>=1.2.10
 tweepy>=3.3.0
 
 pandas>=0.21.0
+numpy>=1.13.3
+matplotlib>=2.1.0
