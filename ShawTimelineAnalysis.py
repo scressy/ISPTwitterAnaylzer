@@ -38,11 +38,19 @@ def get_tweet_sentiment(tweet):
     else:
         return 'negative'
 
-def sentiment_numbers(ptweets,numNeutral,ntweets):
-    dictionary = plt.figure()
-    D = {'Positive':len(ptweets), 'Neutral':numNeutral, 'Negative':len(ntweets)}
-    plt.bar(range(len(D)), D.values(), align='center')
-    plt.xticks(range(len(D)), D.keys())
+# Reference: https://plot.ly/matplotlib/bar-charts/#matplotlib-bar-chart-with-dates
+def sentiment_numbers(user,ptweets,numNeutral,ntweets):
+    fig = plt.figure()
+    dictionary = {'Positive':len(ptweets), 'Neutral':numNeutral, 'Negative':len(ntweets)}
+    bars = plt.bar(range(len(dictionary)), dictionary.values(), align='center',color='#0488c1')
+
+    plt.xticks(range(len(dictionary)), dictionary.keys())
+
+    plt.xlabel('Sentiment', fontsize=14);
+    plt.ylabel('Number of Tweets', fontsize=14);
+
+    fig.suptitle('Number of Tweets by Sentiment', fontsize=18)
+    fig.savefig('plots/' + user + '_sentiment_numbers')
 
     plt.show()
 
@@ -77,4 +85,4 @@ for user in users:
     #     print(tweet.text)
 
 
-    sentiment_numbers(ptweets,numNeutral,ntweets)
+    sentiment_numbers(user,ptweets,numNeutral,ntweets)
