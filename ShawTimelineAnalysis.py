@@ -79,21 +79,27 @@ def plot_sentiment_per_day(source,tweets):
         sentiments.append(get_tweet_sentiment(tweet.text))
 
     df = pd.DataFrame({'tweet_date':dates,'sentiment':sentiments})
-    df['tweet_date'] = pd.to_datetime(df['tweet_date'])
-    df['day_of_week'] = df['tweet_date'].dt.weekday_name
-    df['week_index'] = df['tweet_date'].dt.weekday
 
-    sorter = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    sorterIndex = dict(zip(sorter,range(len(sorter))))
+    if not df.empty:
+        df['tweet_date'] = pd.to_datetime(df['tweet_date'])
+        df['day_of_week'] = df['tweet_date'].dt.weekday_name
+        df['week_index'] = df['tweet_date'].dt.weekday
 
-    df.sort_values('week_index', inplace=True)
-    grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
+        df.sort_values('week_index', inplace=True)
+        grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
 
-    grouped.plot(kind='bar',stacked=True,rot='horizontal')
-    plt.show()
+        fig = grouped.plot(kind='bar',stacked=True,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
+        fig.set_xlabel("Day of the Week")
+        fig.set_ylabel("Total Number of Tweets")
+
+        plt.title('Number of Tweets by Sentiment', fontsize=18)
+        plt.savefig('plots/' + source + '_sentiment_by_week')
+
+        plt.tight_layout()
+        plt.show()
 
 users = ['ShawHelp','ShawInfo']
-startDate = '2017-07-01'
+startDate = '2017-11-01'
 endDate = '2017-11-11'
 
 def sentiment_analysis():
@@ -109,9 +115,15 @@ def sentiment_analysis():
     plot_sentiment_numbers("hastag_shawInternet",tweets)
 
 def avg_tweets_per_day():
+    for user in users:
+        tweetCriteria = got.manager.TweetCriteria().setUsername(user).setSince(startDate).setUntil(endDate)
+        shawTweets = got.manager.TweetManager.getTweets(tweetCriteria)
+
+        plot_sentiment_per_day(user,shawTweets)
+
     tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#ShawInternet').setSince(startDate).setUntil(endDate)
     tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 
-    plot_sentiment_per_day('beepnoop',tweets)
+    plot_sentiment_per_day("hastag_shawInternet",tweets)
 
 avg_tweets_per_day()
