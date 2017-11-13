@@ -74,17 +74,22 @@ def plot_sentiment_numbers(source,df):
         plt.tight_layout()
         plt.show()
 
+def get_sentiment_by_day(df):
+    df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
+    df['tweet_date'] = pd.to_datetime(df['tweet_date'])
+    df['day_of_week'] = df['tweet_date'].dt.weekday_name
+    df['week_index'] = df['tweet_date'].dt.weekday
+
+    df.sort_values('week_index', inplace=True)
+    df = df.drop(['week_index','text'],axis=1)
+    grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
+
+    return grouped
+
 # Creates a bar chart for the TOTAL number of tweets by sentiment for each day of the week
 def plot_sentiment_per_day(source,df):
     if not df.empty:
-        df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
-        df['tweet_date'] = pd.to_datetime(df['tweet_date'])
-        df['day_of_week'] = df['tweet_date'].dt.weekday_name
-        df['week_index'] = df['tweet_date'].dt.weekday
-
-        df.sort_values('week_index', inplace=True)
-        df = df.drop(['week_index','text'],axis=1)
-        grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
+        grouped = get_sentiment_by_day(df)
 
         fig = grouped.plot(kind='bar',stacked=False,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
         fig.set_xlabel("Day of the Week")
@@ -99,15 +104,7 @@ def plot_sentiment_per_day(source,df):
 # Creates a bar chart for the AVERAGE number of tweets by sentiment for each day of the week
 def plot_avg_per_day(source,df):
     if not df.empty:
-        df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
-
-        df['tweet_date'] = pd.to_datetime(df['tweet_date'])
-        df['day_of_week'] = df['tweet_date'].dt.weekday_name
-        df['week_index'] = df['tweet_date'].dt.weekday
-
-        df.sort_values('week_index', inplace=True)
-        df = df.drop(['week_index','text'],axis=1)
-        grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
+        grouped = get_sentiment_by_day(df)
 
         df.sort_values('tweet_date', inplace=True)
         monday1 = (df.tweet_date[0] - timedelta(days=df.tweet_date[0].weekday()))
@@ -133,33 +130,29 @@ startDate = '2017-01-01'
 endDate = '2017-11-11'
 
 def sentiment_analysis():
-    # for user in users:
-    #     tweetCriteria = got.manager.TweetCriteria().setUsername(user).setSince(startDate).setUntil(endDate)
-    #     shawTweets = got.manager.TweetManager.getTweets(tweetCriteria)
-    #     print(len(shawTweets))
-    #
-    #     plot_sentiment_numbers(user,shawTweets)
-    #
-    # tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#ShawInternet').setSince(startDate).setUntil(endDate)
-    # tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+    for user in users:
+        tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+        plot_sentiment_numbers(user,tweets)
 
     tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     plot_sentiment_numbers("hastag_shawInternet",tweets)
 
 def avg_tweets_per_day():
+    for user in users:
+        tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+        plot_avg_per_day(user,tweets)
+
     tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     plot_avg_per_day("hastag_shawInternet",tweets)
 
-    tweets = pd.read_csv('ShawHelp_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    plot_avg_per_day("ShawHelp",tweets)
-
-
 def total_tweets_per_day():
+    for user in users:
+        tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+        plot_sentiment_per_day(user,tweets)
+
     tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     plot_sentiment_per_day("hastag_shawInternet",tweets)
-
-    tweets = pd.read_csv('ShawHelp_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    plot_sentiment_per_day("ShawHelp",tweets)
-
-total_tweets_per_day()
+#
+# sentiment_analysis()
 avg_tweets_per_day()
+# total_tweets_per_day()
