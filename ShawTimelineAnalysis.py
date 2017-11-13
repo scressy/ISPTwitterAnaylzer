@@ -73,50 +73,26 @@ def plot_sentiment_numbers(source,df):
         plt.tight_layout()
         plt.show()
 
+# Creates a stacked bar chart for the avg number of tweets by sentiment for each day of the week
 def plot_sentiment_per_day(source,df):
     if not df.empty:
         df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
         df['tweet_date'] = pd.to_datetime(df['tweet_date'])
         df['day_of_week'] = df['tweet_date'].dt.weekday_name
-        df['day_of_week_index'] = df['tweet_date'].dt.weekday
-        df['week'] = df['tweet_date'].dt.week
+        df['week_index'] = df['tweet_date'].dt.weekday
 
-        df.sort_values('day_of_week_index', inplace=True)
-        df = df.drop(columns=['day_of_week_index','tweet_date','text'])
+        df.sort_values('week_index', inplace=True)
+        grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
 
-        df['sentiment_by_day_counts'] = df.groupby(['day_of_week','sentiment'], sort=False).transform('count')
-        df['day_by_week_counts'] = df.groupby(['day_of_week','week'], sort=False).week.transform('count')
+        fig = grouped.plot(kind='bar',stacked=True,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
+        fig.set_xlabel("Day of the Week")
+        fig.set_ylabel("Total Number of Tweets")
 
-    #     test = df.groupby(['day_of_week','sentiment'], sort=False)['tweet_counts'].count()
+        plt.title('Number of Tweets by Sentiment', fontsize=18)
+        plt.savefig('plots/' + source + '_sentiment_by_week')
 
-        # df['week_counts'] = df.groupby(['day_of_week','week'])['day_of_week'].transform('count')
-
-        #
-        # df['total_tweets'] = df.groupby(['day_of_week'], sort=False)['week'].transform('count')
-        # df['total_weeks'] = df.groupby(['week'], sort=False)['day_of_week'].transform('count')
-        # df = df.drop(columns=['week'])
-        # test = df.groupby(['day_of_week','sentiment'], sort=False)['tweet_counts'].mean()
-
-        # grouped = df.groupby(['day_of_week','sentiment'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
-
-
-        # grouped['cumulative_tweets'] = grouped.day_of_week.mean()
-
-        print(df)
-        # print(test)
-        # print(grouped)
-
-        # fig = grouped.plot(kind='bar',stacked=True,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
-
-
-        # fig.set_xlabel("Day of the Week")
-        # fig.set_ylabel("Total Number of Tweets")
-        #
-        # plt.title('Number of Tweets by Sentiment', fontsize=18)
-        # plt.savefig('plots/' + source + '_sentiment_by_week')
-        #
-        # plt.tight_layout()
-        # plt.show()
+        plt.tight_layout()
+        plt.show()
 
 users = ['ShawHelp','ShawInfo']
 startDate = '2017-01-01'
