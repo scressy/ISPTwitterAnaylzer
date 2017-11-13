@@ -39,19 +39,28 @@ def get_tweet_sentiment(tweet):
         return 'negative'
 
 # Reference: https://plot.ly/matplotlib/bar-charts/#matplotlib-bar-chart-with-dates
-def sentiment_numbers(user,ptweets,numNeutral,ntweets):
-    fig = plt.figure()
-    dictionary = {'Positive':len(ptweets), 'Neutral':numNeutral, 'Negative':len(ntweets)}
-    bars = plt.bar(range(len(dictionary)), dictionary.values(), align='center',color='#0488c1')
+def sentiment_numbers(user,tweets):
+    ptweets = len([tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'positive'])
+    ntweets = len([tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'negative'])
+    numNeutral = len(tweets)-ntweets-ptweets
 
-    plt.xticks(range(len(dictionary)), dictionary.keys())
+    vals = [ptweets, numNeutral, ntweets ]
+    sentiments = 'Positive','Neutral','Negative'
 
-    plt.xlabel('Sentiment', fontsize=14);
-    plt.ylabel('Number of Tweets', fontsize=14);
+    fig = plt.figure(figsize=(6,6))
 
-    fig.suptitle('Number of Tweets by Sentiment', fontsize=18)
+    plt.axis("equal")
+    patches, texts, autotexts = plt.pie(vals, labels=sentiments, autopct='%1.1f%%')
+    plt.title('Number of Tweets by Sentiment', fontsize=18)
+
+    for t in texts:
+        t.set_size(14)
+    for t in autotexts:
+        t.set_size(16)
+
     fig.savefig('plots/' + user + '_sentiment_numbers')
 
+    plt.tight_layout()
     plt.show()
 
 # users = ['ShawHelp','ShawInfo']
@@ -62,27 +71,4 @@ for user in users:
     tweetCriteria = got.manager.TweetCriteria().setUsername(user).setSince("2017-10-11").setUntil("2017-10-12")
     tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 
-    # picking positive tweets from tweets
-    ptweets = [tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'positive']
-    # percentage of positive tweets
-    print("Positive tweets percentage: {} %".format(100*len(ptweets)/len(tweets)))
-    # picking negative tweets from tweets
-    ntweets = [tweet for tweet in tweets if get_tweet_sentiment(tweet.text) == 'negative']
-    # percentage of negative tweets
-    print("Negative tweets percentage: {} %".format(100*len(ntweets)/len(tweets)))
-    # percentage of neutral tweets
-    numNeutral = len(tweets)-len(ntweets)-len(ptweets)
-    print("Neutral tweets percentage: {} %".format(100*(numNeutral)/len(tweets)))
-
-
-    # printing first 5 positive tweets
-    # print("\n\nPositive tweets:")
-    # for tweet in ptweets[:10]:
-    #     print(tweet.text)
-    # # printing first 5 negative tweets
-    # print("\n\nNegative tweets:")
-    # for tweet in ntweets[:10]:
-    #     print(tweet.text)
-
-
-    sentiment_numbers(user,ptweets,numNeutral,ntweets)
+    sentiment_numbers(user,tweets)
