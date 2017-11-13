@@ -22,6 +22,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
 
+
 ################################################################################################
 # HELPER STUFF
 ################################################################################################
@@ -82,7 +83,7 @@ def plot_sentiment_numbers(source,df):
 
         plt.axis("equal")
         patches, texts, autotexts = plt.pie(vals, labels=sentiments, autopct=make_autopct(vals))
-        plt.title('Number of Tweets by Sentiment', fontsize=18)
+        plt.title('Percentage of Tweets by Sentiment', fontsize=18)
 
         for t in texts:
             t.set_size(16)
@@ -99,11 +100,11 @@ def plot_sentiment_per_day(source,df):
     if not df.empty:
         grouped = get_sentiment_by_day(df)
 
-        fig = grouped.plot(kind='bar',stacked=False,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
+        fig = grouped.plot(kind='bar',stacked=True,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
         fig.set_xlabel("Day of the Week")
         fig.set_ylabel("Total Number of Tweets")
 
-        plt.title('Number of Tweets by Sentiment', fontsize=18)
+        plt.title('Total Number of Tweets by Sentiment', fontsize=18)
         plt.savefig('plots/' + source + '_sentiment_by_week')
 
         plt.tight_layout()
@@ -114,8 +115,6 @@ def plot_avg_per_day(source,df):
     if not df.empty:
         grouped = get_sentiment_by_day(df)
 
-        print(grouped)
-
         df.sort_values('tweet_date', inplace=True)
         monday1 = (df.tweet_date[0] - timedelta(days=df.tweet_date[0].weekday()))
         monday2 = (df.tweet_date[len(df.index) - 1] - timedelta(days=df.tweet_date[len(df.index) - 1].weekday()))
@@ -125,13 +124,11 @@ def plot_avg_per_day(source,df):
         for s in sentiments:
             grouped[s] = grouped.apply(lambda x: x[s] / total_weeks, axis=1)
 
-        print(grouped)
-
         fig = grouped.plot(kind='bar',stacked=False,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
         fig.set_xlabel("Day of the Week")
         fig.set_ylabel("Average Number of Tweets")
 
-        plt.title('Number of Tweets by Sentiment', fontsize=18)
+        plt.title('Average Number of Tweets by Sentiment', fontsize=18)
         plt.savefig('plots/' + source + '_avg_by_week')
 
         plt.tight_layout()
@@ -167,9 +164,9 @@ def total_tweets_per_day():
         tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
         plot_sentiment_per_day(user,tweets)
 
-    # tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    # plot_sentiment_per_day("hastag_shawInternet",tweets)
-#
-# sentiment_analysis()
+    tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    plot_sentiment_per_day("hastag_shawInternet",tweets)
+
+sentiment_analysis()
 avg_tweets_per_day()
-# total_tweets_per_day()
+total_tweets_per_day()
