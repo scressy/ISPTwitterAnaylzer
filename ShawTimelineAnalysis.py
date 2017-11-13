@@ -74,7 +74,7 @@ def plot_sentiment_numbers(source,df):
         plt.tight_layout()
         plt.show()
 
-# Creates a bar chart for the avg number of tweets by sentiment for each day of the week
+# Creates a bar chart for the TOTAL number of tweets by sentiment for each day of the week
 def plot_sentiment_per_day(source,df):
     if not df.empty:
         df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
@@ -96,9 +96,11 @@ def plot_sentiment_per_day(source,df):
         plt.tight_layout()
         plt.show()
 
+# Creates a bar chart for the AVERAGE number of tweets by sentiment for each day of the week
 def plot_avg_per_day(source,df):
     if not df.empty:
         df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
+
         df['tweet_date'] = pd.to_datetime(df['tweet_date'])
         df['day_of_week'] = df['tweet_date'].dt.weekday_name
         df['week_index'] = df['tweet_date'].dt.weekday
@@ -131,30 +133,33 @@ startDate = '2017-01-01'
 endDate = '2017-11-11'
 
 def sentiment_analysis():
-#     for user in users:
-#         tweetCriteria = got.manager.TweetCriteria().setUsername(user).setSince(startDate).setUntil(endDate)
-#         shawTweets = got.manager.TweetManager.getTweets(tweetCriteria)
-#         print(len(shawTweets))
-#
-#         plot_sentiment_numbers(user,shawTweets)
-#
-#     tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#ShawInternet').setSince(startDate).setUntil(endDate)
-#     tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+    # for user in users:
+    #     tweetCriteria = got.manager.TweetCriteria().setUsername(user).setSince(startDate).setUntil(endDate)
+    #     shawTweets = got.manager.TweetManager.getTweets(tweetCriteria)
+    #     print(len(shawTweets))
+    #
+    #     plot_sentiment_numbers(user,shawTweets)
+    #
+    # tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#ShawInternet').setSince(startDate).setUntil(endDate)
+    # tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 
     tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     plot_sentiment_numbers("hastag_shawInternet",tweets)
 
 def avg_tweets_per_day():
-    # for user in users:
-    #     tweetCriteria = got.manager.TweetCriteria().setUsername(users[0]).setSince(startDate).setUntil(endDate)
-    #     shawTweets = got.manager.TweetManager.getTweets(tweetCriteria)
-    #
-    #     plot_sentiment_per_day(user,shawTweets)
-
-    # tweetCriteria = got.manager.TweetCriteria().setQuerySearch('#ShawInternet').setSince(startDate).setUntil(endDate)
-    # tweets = got.manager.TweetManager.getTweets(tweetCriteria)
-    # print(tweets[1].text)
-    tweets = pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     plot_avg_per_day("hastag_shawInternet",tweets)
 
+    tweets = pd.read_csv('ShawHelp_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    plot_avg_per_day("ShawHelp",tweets)
+
+
+def total_tweets_per_day():
+    tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    plot_sentiment_per_day("hastag_shawInternet",tweets)
+
+    tweets = pd.read_csv('ShawHelp_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    plot_sentiment_per_day("ShawHelp",tweets)
+
+total_tweets_per_day()
 avg_tweets_per_day()
