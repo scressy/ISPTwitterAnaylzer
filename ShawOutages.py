@@ -66,6 +66,19 @@ def plot_outage_report_numbers(source,df):
         plt.tight_layout()
         plt.show()
 
+def plot_missed_reports(source,df):
+    if not df.empty:
+        fig = df.iloc[0].plot.pie(figsize=(7,7), title='Officially Reported vs Unreported Outages', autopct='%.2f', colors=['c','y'], fontsize=16)
+        fig.set_aspect('equal')
+        fig.set_xlabel(" ")
+        fig.set_ylabel(" ")
+        
+        plt.title('Officially Reported vs Unreported Outages', fontsize=18)
+        plt.savefig('plots/' + source + '_outage_missed_reports')
+        
+        plt.tight_layout()
+        plt.show()
+
 
 ##################################
 # Main
@@ -89,3 +102,6 @@ missedrdate_num = len(missed_dates)
 d = {'Official': [officialrdate_num], 'Unofficial': [rdate_num]}
 df = pd.DataFrame(d)
 plot_outage_report_numbers('Shaw',df)
+md = {'Reported': [officialrdate_num], 'Unreported': [missedrdate_num]}
+mdf = pd.DataFrame(md)
+plot_missed_reports('Shaw',mdf)
