@@ -5,6 +5,7 @@ import csv
 import pandas as pd
 import got
 import numpy as np
+import matplotlib.pyplot as plt
 
 ####input your credentials here
 consumer_key = 'ejCkcbYsjKRCI6e125bJpG49x'
@@ -47,7 +48,6 @@ def find_official_report_dates(rdates):
 def find_missed_report_dates(rdates, officialrdates, misseddates):
     for rdate in rdates:
         if rdate not in officialrdates:
-            print(rdate)
             misseddates.append(rdate)
 
 ##################################
@@ -56,7 +56,7 @@ def find_missed_report_dates(rdates, officialrdates, misseddates):
 
 def plot_outage_report_numbers(source,df):
     if not df.empty:
-        fig = df.plot(kind='bar',rot='horizontal',figsize=(9,6), title='Total Number of Official/Unofficial Outage Reports')
+        fig = df.iloc[0].plot(kind='bar',rot='horizontal',figsize=(9,6), title='Total Number of Official/Unofficial Outage Reports', ylim=[0,15])
         fig.set_xlabel("Reports")
         fig.set_ylabel("Total Number of Outage Reports")
         
@@ -88,5 +88,4 @@ missedrdate_num = len(missed_dates)
 #set up data frame
 d = {'Official': [officialrdate_num], 'Unofficial': [rdate_num]}
 df = pd.DataFrame(d)
-print(df)
-#plot_outage_report_numbers('Shaw',df)
+plot_outage_report_numbers('Shaw',df)
