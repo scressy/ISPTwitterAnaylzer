@@ -3,6 +3,7 @@ import tweepy
 from tweepy import OAuthHandler
 from textblob import TextBlob
 from datetime import datetime, timedelta
+import calendar
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -30,13 +31,19 @@ debug = True
 
 # reference https://plot.ly/pandas/line-charts/
 def get_volume(df):
+
     df['by_month'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.month
-    grouped = df.groupby(['by_month'])['by_month'].count()
-    if(debug):
-        print(grouped.to_string())
+    # df['by_month'] = df['by_month'].apply(lambda x: calendar.month_abbr[x])
 
     # separate into month and count
+    # grouped = df.groupby(['by_month'])['by_month'].count()
+    grouped = df.groupby(['by_month'])['by_month'].count().reset_index(name="count")
 
+    # changes month int to month str, does it from ascending order
+    grouped['by_month'] = grouped['by_month'].apply(lambda x: calendar.month_abbr[x])
+
+    if(debug):
+        print(grouped.to_string())
     return grouped
 
 ################################################################################################
@@ -48,7 +55,7 @@ def plot_volume_of_tweets(source,df):
     if not df.empty:
         grouped = get_volume(df)
 
-        fig = grouped.plot()
+        fig = grouped.plot.line(x='by_month', y='count', style='-', title="Number of Tweets per Month")
         fig.set_xlabel("Months")
         fig.set_ylabel("Number of Tweets")
 
