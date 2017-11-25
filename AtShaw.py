@@ -25,7 +25,9 @@ csvFile = open("atShaw.csv", "w")
 #Use csv Writer
 csvWriter = csv.writer(csvFile)
 
-tweetCriteria = got.manager.TweetCriteria().setQuerySearch('to:ShawHelp').setSince("2015-10-21").setUntil("2015-10-22")
+# for search queries, use
+# http://www.followthehashtag.com/help/hidden-twitter-search-operators-extra-power-followthehashtag/
+tweetCriteria = got.manager.TweetCriteria().setQuerySearch('to:ShawHelp -filter:nativeretweets').setSince("2015-10-21").setUntil("2015-10-22")
 tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 for tweet in tweets:
     csvWriter.writerow([tweet.date, tweet.text.encode('utf-8')])
