@@ -3,6 +3,7 @@ import tweepy
 from tweepy import OAuthHandler
 from textblob import TextBlob
 from datetime import datetime, timedelta
+from math import isnan
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -136,28 +137,18 @@ users = ['ShawHelp','ShawInfo']
 
 def sentiment_analysis():
     for user in users:
-        tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+        tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
+        tweets = tweets[pd.notnull(tweets['text'])]
+
         plot_sentiment_numbers(user,tweets)
-
-    tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    plot_sentiment_numbers("hastag_shawInternet",tweets)
-
-def avg_tweets_per_day():
-    for user in users:
-        tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
         plot_avg_per_day(user,tweets)
-
-    tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    plot_avg_per_day("hastag_shawInternet",tweets)
-
-def total_tweets_per_day():
-    for user in users:
-        tweets =  pd.read_csv(user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
         plot_sentiment_per_day(user,tweets)
 
-    tweets =  pd.read_csv('shawtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    tweets =  pd.read_csv('datasets/ShawInternet_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    tweets = tweets[pd.notnull(tweets['text'])]
+
+    plot_sentiment_numbers("hastag_shawInternet",tweets)
+    plot_avg_per_day("hastag_shawInternet",tweets)
     plot_sentiment_per_day("hastag_shawInternet",tweets)
 
 sentiment_analysis()
-avg_tweets_per_day()
-total_tweets_per_day()
