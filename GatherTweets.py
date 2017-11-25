@@ -19,7 +19,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
 
-startDate = '2017-10-11'
+startDate = '2017-08-11'
 endDate = '2017-11-11'
 
 #######################################################################

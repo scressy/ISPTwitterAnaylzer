@@ -3,7 +3,8 @@ import tweepy
 from tweepy import OAuthHandler
 from textblob import TextBlob
 from datetime import datetime, timedelta
-from math import isnan
+from dateutil import relativedelta as rdelta
+import calendar
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -55,6 +56,19 @@ def get_sentiment_by_day(df):
     df.sort_values('week_index', inplace=True)
     df = df.drop(['week_index','text'],axis=1)
     grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
+
+    return grouped
+
+def get_sentiment_by_month(df):
+    df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
+    df['tweet_date'] = pd.to_datetime(df['tweet_date'])
+    df['month_index'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.month
+
+    df['by_month'] = df['month_index'].apply(lambda x: calendar.month_abbr[x])
+    df.sort_values('month_index', inplace=True)
+    df = df.drop(['month_index','text'],axis=1)
+
+    grouped = df.groupby(['sentiment','by_month'], sort=False)['by_month'].count().unstack('sentiment').fillna(0)
 
     return grouped
 
@@ -128,6 +142,22 @@ def plot_avg_per_day(source,df):
         plt.tight_layout()
         plt.show()
 
+def plot_num_per_month(source,df):
+    if not df.empty:
+        grouped = get_sentiment_by_month(df)
+
+        # total = len(grouped.axes[0])
+
+        fig = grouped.plot.line(figsize=(9,6), title='Number of Tweets by Sentiment')
+        fig.set_xlabel("Month")
+        fig.set_ylabel("Total Number of Tweets")
+
+        plt.title('Total Number of Tweets by Sentiment', fontsize=18)
+        plt.savefig('plots/' + source + '_sentiment_by_month')
+
+        plt.tight_layout()
+        plt.show()
+
 
 ################################################################################################
 # MAIN STUFF
@@ -143,12 +173,15 @@ def sentiment_analysis():
         plot_sentiment_numbers(user,tweets)
         plot_avg_per_day(user,tweets)
         plot_sentiment_per_day(user,tweets)
+        plot_num_per_month(user,tweets)
 
-    tweets =  pd.read_csv('datasets/ShawInternet_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+
+    tweets =  pd.read_csv('datasets/' + users[0] + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
     plot_sentiment_numbers("hastag_shawInternet",tweets)
     plot_avg_per_day("hastag_shawInternet",tweets)
     plot_sentiment_per_day("hastag_shawInternet",tweets)
+    plot_num_per_month("hastag_shawInternet",tweets)
 
 sentiment_analysis()
