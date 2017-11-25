@@ -55,7 +55,7 @@ def plot_volume_of_tweets(source,df):
     if not df.empty:
         grouped = get_volume(df)
 
-        fig = grouped.plot.line(x='by_month', y='count', style='-', title="Number of Tweets per Month")
+        fig = grouped.plot.line(x='by_month', y='count', style='-', legend=False, title="Number of Tweets per Month")
         fig.set_xlabel("Months")
         fig.set_ylabel("Number of Tweets")
 
