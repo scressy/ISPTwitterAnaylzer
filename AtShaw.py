@@ -25,55 +25,7 @@ csvFile = open("atShaw.csv", "w")
 #Use csv Writer
 csvWriter = csv.writer(csvFile)
 
-tweetCriteria = got.manager.TweetCriteria().setQuerySearch('@ShawHelp').setSince("2015-10-21").setUntil("2015-10-22")
+tweetCriteria = got.manager.TweetCriteria().setQuerySearch('to:ShawHelp').setSince("2015-10-21").setUntil("2015-10-22")
 tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 for tweet in tweets:
     csvWriter.writerow([tweet.date, tweet.text.encode('utf-8')])
-
-# searchQuery = '@ShawHelp'
-# retweet_filter='-filter:retweets'       # skips retweets
-# q=searchQuery+retweet_filter            # query parameter
-# tweetsPerQry = 100
-# fName = 'atShaw.csv'
-# sinceId = None
-#
-# max_id = -1L
-# maxTweets = 50                          # max number of tweets to put in file
-#
-# tweetCount = 0
-# print("Downloading max {0} tweets".format(maxTweets))
-# with open(fName, 'w') as f:
-#     while tweetCount < maxTweets:
-#         try:
-#             if (max_id <= 0):
-#                 if (not sinceId):
-#                     new_tweets = api.search(q=searchQuery, count=tweetsPerQry)
-#                 else:
-#                     new_tweets = api.search(q=searchQuery, count=tweetsPerQry,
-#                                             since_id=sinceId)
-#             else:
-#                 if (not sinceId):
-#                     new_tweets = api.search(q=searchQuery, count=tweetsPerQry,
-#                                             max_id=str(max_id - 1))
-#                 else:
-#                     new_tweets = api.search(q=searchQuery, count=tweetsPerQry,
-#                                             max_id=str(max_id - 1),
-#                                             since_id=sinceId)
-#             if not new_tweets:
-#                 print("No more tweets found")
-#                 break
-#             for tweet in new_tweets:
-#                 # write function goes here
-#                 # outtweets = [tweet.id_str, tweet.created_at, tweet.text.encode("utf-8")]
-#                 # f.write(outtweets)
-#                 # f.write(jsonpickle.encode(tweet._json, unpicklable=False) +
-#                 #         '\n')
-#             tweetCount += len(new_tweets)
-#             print("Downloaded {0} tweets".format(tweetCount))
-#             max_id = new_tweets[-1].id
-#         except tweepy.TweepError as e:
-#             # Just exit if any error
-#             print("some error : " + str(e))
-#             break
-#
-# print ("Downloaded {0} tweets, Saved to {1}".format(tweetCount, fName))
