@@ -27,10 +27,10 @@ csvWriter = csv.writer(csvFile)
 
 searchQuery = ['@ShawHelp -filter:nativeretweets -from:ShawHelp',
     '@ShawInfo -filter:nativeretweets -from:ShawInfo',
-    '@ShawHelp filter:replies']
+    'from:ShawHelp filter:replies']
 # for search queries, use
 # http://www.followthehashtag.com/help/hidden-twitter-search-operators-extra-power-followthehashtag/
-tweetCriteria = got.manager.TweetCriteria().setQuerySearch(searchQuery[2]).setSince("2015-10-21").setUntil("2015-10-22")
+tweetCriteria = got.manager.TweetCriteria().setQuerySearch(searchQuery[2]).setSince("2017-11-21").setUntil("2017-11-22")
 tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 for tweet in tweets:
     csvWriter.writerow([tweet.date, tweet.text.encode('utf-8')])
