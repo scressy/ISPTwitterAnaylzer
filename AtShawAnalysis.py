@@ -31,33 +31,38 @@ debug = True
 
 # reference https://plot.ly/pandas/line-charts/
 def get_volume(df):
-
     df['by_month'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.month
 
     # separate into month and count
-    # grouped = df.groupby(['by_month'])['by_month'].count()
     grouped = df.groupby(['by_month'])['by_month'].count().reset_index(name="count")
 
-    # changes month int to month str, does it from ascending order
+    # changes month int to month str
     grouped['by_month'] = grouped['by_month'].apply(lambda x: calendar.month_abbr[x])
 
     if(debug):
         print(grouped)
     return grouped
 
+# get_response takes in a dataframe and returns the mean response time of the dataframe
 def get_response(df):
-
     df['tvalue'] = df.index
     df['by_time'] = pd.to_datetime(df['tweet_date'], errors='coerce')
     df['delta'] = (df['by_time'].shift()-df['by_time']).fillna(pd.to_timedelta("00:00:00"))
     df['delta'] = df['delta'].dt.total_seconds()
 
-    # grouped =  df.groupby(['delta'])['delta'].mean().reset_index(name="average")
     grouped = df['delta'].mean()
+    grouped = timedelta(seconds=grouped)
 
     if(debug):
         print(grouped)
+    return grouped
 
+def sort_by_month(df):
+    df['by_month'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.month
+    grouped = df.groupby(['by_month','text'])['by_month']
+
+    if(debug):
+        print(grouped)
     return grouped
 
 ################################################################################################
@@ -79,7 +84,7 @@ def plot_volume_of_tweets(source,df):
         plt.tight_layout()
         plt.show()
 
-def plot_response(source,df):
+def plot_responses(source,df):
         grouped = get_volume(df)
 
         fig = grouped.plot.line(kind='bar',rot='horizontal',figsize=(9,6), style='-', legend=False, title="Average Response per Month")
@@ -107,7 +112,8 @@ def volume_of_tweets():
     tweets =  pd.read_csv('atShaw_replies.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
 
     # get_volume(tweets)
-    get_response(tweets)
+    # get_response(tweets)
+    sort_by_month(tweets)
     # plot_volume_of_tweets("at_shawHelp",tweets)
 
 volume_of_tweets()
