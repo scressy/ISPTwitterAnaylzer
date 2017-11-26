@@ -86,6 +86,7 @@ def plot_missed_reports(source,df):
 #find unofficial outage reports
 report_dates = []
 find_report_dates(report_dates, 'shawtags.csv')
+find_report_dates(report_dates, 'atShaw.csv')
 rdate_num = len(report_dates)
 
 #find official outage reports
