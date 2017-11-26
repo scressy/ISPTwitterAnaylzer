@@ -42,30 +42,23 @@ def get_volume(df):
     grouped['by_month'] = grouped['by_month'].apply(lambda x: calendar.month_abbr[x])
 
     if(debug):
-        print(grouped.to_string())
+        print(grouped)
     return grouped
 
 def get_response(df):
 
-    # df['tweet_date'] = pd.to_datetime(df['tweet_date'], errors='coerce')
-
-    # grouped = df.groupby(['deltaResponseTime'])['deltaResponseTime'].count().reset_index(name="count")
-
-    # df['deltaT'] = df.index.to_series().diff().dt.seconds.div(60, fill_value=0)
-
-    # grouped = grouped.index.to_series().diff().dt.seconds.div(60, fill_value=0)
     df['tvalue'] = df.index
     df['by_time'] = pd.to_datetime(df['tweet_date'], errors='coerce')
     df['delta'] = (df['by_time'].shift()-df['by_time']).fillna(pd.to_timedelta("00:00:00"))
+    df['delta'] = df['delta'].dt.total_seconds()
 
-    grouped = df
+    # grouped =  df.groupby(['delta'])['delta'].mean().reset_index(name="average")
+    grouped = df['delta'].mean()
 
     if(debug):
-        # print df
         print(grouped)
 
     return grouped
-    # return grouped
 
 ################################################################################################
 # PLOT STUFF
