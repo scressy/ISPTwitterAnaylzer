@@ -46,6 +46,16 @@ def get_volume(df):
         print(grouped.to_string())
     return grouped
 
+def get_response(df):
+
+    df['deltaResponseTime'] = pd.to_datetime(df['tweet_date'], errors='coerce')
+    grouped = df.groupby(['deltaResponseTime'])['deltaResponseTime'].count().reset_index(name="count")
+
+    if(debug):
+        print(grouped.to_string())
+
+    return grouped
+
 ################################################################################################
 # PLOT STUFF
 ################################################################################################
@@ -57,6 +67,19 @@ def plot_volume_of_tweets(source,df):
 
         fig = grouped.plot.line(x='by_month', y='count', style='-', legend=False, title="Number of Tweets per Month")
         fig.set_xlabel("Months")
+        fig.set_ylabel("Number of Tweets")
+
+        # used to save the file
+        plt.savefig('plots/' + source + '_volume')
+
+        plt.tight_layout()
+        plt.show()
+
+def plot_response(source,df):
+        grouped = get_volume(df)
+
+        fig = grouped.plot.line(kind='bar',rot='horizontal',figsize=(9,6), style='-', legend=False, title="Average Response per Month")
+        fig.set_xlabel("Date")
         fig.set_ylabel("Number of Tweets")
 
         # used to save the file
@@ -77,9 +100,10 @@ startDate = '2017-01-01'
 endDate = '2017-11-11'
 
 def volume_of_tweets():
-    tweets =  pd.read_csv('atShaw.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
+    tweets =  pd.read_csv('atShaw_replies.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
 
     # get_volume(tweets)
-    plot_volume_of_tweets("at_shawHelp",tweets)
+    get_response(tweets)
+    # plot_volume_of_tweets("at_shawHelp",tweets)
 
 volume_of_tweets()
