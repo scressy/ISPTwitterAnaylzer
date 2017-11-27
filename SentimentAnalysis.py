@@ -20,15 +20,6 @@ import csv
 import json
 import got
 
-consumer_key = 'ejCkcbYsjKRCI6e125bJpG49x'
-consumer_secret = 'qqEeJUPeFdlZyETjx6hJxfFw6i1gYWCINpQvdwdJzh7rMKttTu'
-access_token = '919666743655538688-bCIJ3vxitH4jX1XE7xj1sUniYGR5pjH'
-access_token_secret = 'bDrJFwMNPd54FeeMoDMewBoAR5FQoLySc1ILBH9bs8x98'
-
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth,wait_on_rate_limit=True)
-
 plt.style.use('ggplot')
 
 ################################################################################################
@@ -52,11 +43,6 @@ def make_autopct(values):
         val = int(round(pct*total/100.0))
         return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
     return my_autopct
-
-def clean_tweet(tweet):
-    cleanedTweet = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])(\w+:\/\/\S+)(')", " ", tweet).split())
-    removedPunctuation = ''.join(re.sub(r'[^\w\s]','',cleanedTweet))
-    return removedPunctuation
 
 def get_sentiment_by_day(df):
     df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
@@ -82,28 +68,6 @@ def get_sentiment_by_month(df):
     grouped = df.groupby(['sentiment','by_month'], sort=False)['by_month'].count().unstack('sentiment').fillna(0)
 
     return grouped
-
-def count_words(text):
-    stopwords = nltk.corpus.stopwords.words('english')
-    # RegEx for stopwords
-    RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
-    # replace '|'-->' ' and drop all stopwords
-
-    return (text.str.lower()
-               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
-               .str.cat(sep=' ')
-               .split())
-
-def get_most_popular_words(df):
-    top_N = 10
-
-    df['text'] = df['text'].apply(lambda x: clean_tweet(x))
-
-    words = count_words(df['text'])
-    final = pd.DataFrame(Counter(words).most_common(top_N), columns=['Word', 'Frequency'])
-    # final['sentiment'] = final.apply(lambda x: get_tweet_sentiment(x['Word']), axis=1)
-
-    return final.set_index('Word')
 
 ################################################################################################
 # PLOT STUFF
@@ -167,19 +131,6 @@ def plot_num_per_month(source,df):
         plt.tight_layout()
         plt.show()
 
-def plot_word_counts(source,df):
-    if not df.empty:
-        allCounts = get_most_popular_words(df)
-
-        allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
-
-        plt.title('Most Frequent Words by Sentiment', fontsize=18)
-        plt.savefig('plots/' + source + '_sentimentwordcount')
-
-        plt.tight_layout()
-        plt.show()
-
-
 ################################################################################################
 # MAIN STUFF
 ################################################################################################
@@ -191,7 +142,6 @@ def sentiment_analysis():
         tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
         tweets = tweets[pd.notnull(tweets['text'])]
 
-        plot_word_counts(user,tweets)
         plot_sentiment_numbers(user,tweets)
         plot_sentiment_per_day(user,tweets)
         plot_num_per_month(user,tweets)
@@ -199,7 +149,6 @@ def sentiment_analysis():
     tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
-    plot_word_counts("hastag_shawInternet",tweets)
     plot_sentiment_numbers("hastag_shawInternet",tweets)
     plot_sentiment_per_day("hastag_shawInternet",tweets)
     plot_num_per_month("hastag_shawInternet",tweets)
@@ -207,7 +156,6 @@ def sentiment_analysis():
     tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
-    plot_word_counts("atShawHelp",tweets)
     plot_sentiment_numbers("atShawHelp",tweets)
     plot_sentiment_per_day("atShawHelp",tweets)
     plot_num_per_month("atShawHelp",tweets)
