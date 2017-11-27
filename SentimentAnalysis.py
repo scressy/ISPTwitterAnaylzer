@@ -1,10 +1,15 @@
 import re
 import tweepy
+from collections import Counter
 from tweepy import OAuthHandler
 from textblob import TextBlob
 from datetime import datetime, timedelta
 from dateutil import relativedelta as rdelta
 import calendar
+
+import nltk
+from nltk.corpus import stopwords # Import the stop word list
+from nltk.tokenize import wordpunct_tokenize
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -24,6 +29,7 @@ auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
 
+plt.style.use('ggplot')
 
 ################################################################################################
 # HELPER STUFF
@@ -46,6 +52,11 @@ def make_autopct(values):
         val = int(round(pct*total/100.0))
         return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
     return my_autopct
+
+def clean_tweet(tweet):
+    cleanedTweet = ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])(\w+:\/\/\S+)(')", " ", tweet).split())
+    removedPunctuation = ''.join(re.sub(r'[^\w\s]','',cleanedTweet))
+    return removedPunctuation
 
 def get_sentiment_by_day(df):
     df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
@@ -72,6 +83,27 @@ def get_sentiment_by_month(df):
 
     return grouped
 
+def count_words(text):
+    stopwords = nltk.corpus.stopwords.words('english')
+    # RegEx for stopwords
+    RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+    # replace '|'-->' ' and drop all stopwords
+
+    return (text.str.lower()
+               .replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ')
+               .split())
+
+def get_most_popular_words(df):
+    top_N = 10
+
+    df['text'] = df['text'].apply(lambda x: clean_tweet(x))
+
+    words = count_words(df['text'])
+    final = pd.DataFrame(Counter(words).most_common(top_N), columns=['Word', 'Frequency'])
+    # final['sentiment'] = final.apply(lambda x: get_tweet_sentiment(x['Word']), axis=1)
+
+    return final.set_index('Word')
 
 ################################################################################################
 # PLOT STUFF
@@ -85,11 +117,12 @@ def plot_sentiment_numbers(source,df):
         counts = df['sentiment'].value_counts().to_dict()
 
         vals = counts.values()
-        sentiments = 'Positive','Neutral','Negative'
+        sentiments = counts.keys()
 
         fig = plt.figure(figsize=(6,6))
 
         plt.axis("equal")
+
         patches, texts, autotexts = plt.pie(vals, labels=sentiments, autopct=make_autopct(vals))
         plt.title('Percentage of Tweets by Sentiment', fontsize=18)
 
@@ -118,30 +151,6 @@ def plot_sentiment_per_day(source,df):
         plt.tight_layout()
         plt.show()
 
-# Creates a bar chart for the AVERAGE number of tweets by sentiment for each day of the week
-def plot_avg_per_day(source,df):
-    if not df.empty:
-        grouped = get_sentiment_by_day(df)
-
-        df.sort_values('tweet_date', inplace=True)
-        monday1 = (df.tweet_date[0] - timedelta(days=df.tweet_date[0].weekday()))
-        monday2 = (df.tweet_date[len(df.index) - 1] - timedelta(days=df.tweet_date[len(df.index) - 1].weekday()))
-        total_weeks = float ((monday1 - monday2).days / 7)
-
-        sentiments = ['positive','neutral','negative']
-        for s in sentiments:
-            grouped[s] = grouped.apply(lambda x: x[s] / total_weeks, axis=1)
-
-        fig = grouped.plot(kind='bar',stacked=False,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
-        fig.set_xlabel("Day of the Week")
-        fig.set_ylabel("Average Number of Tweets")
-
-        plt.title('Average Number of Tweets by Sentiment', fontsize=18)
-        plt.savefig('plots/' + source + '_avg_by_week')
-
-        plt.tight_layout()
-        plt.show()
-
 def plot_num_per_month(source,df):
     if not df.empty:
         grouped = get_sentiment_by_month(df)
@@ -158,6 +167,18 @@ def plot_num_per_month(source,df):
         plt.tight_layout()
         plt.show()
 
+def plot_word_counts(source,df):
+    if not df.empty:
+        allCounts = get_most_popular_words(df)
+
+        allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
+
+        plt.title('Most Frequent Words by Sentiment', fontsize=18)
+        plt.savefig('plots/' + source + '_sentimentwordcount')
+
+        plt.tight_layout()
+        plt.show()
+
 
 ################################################################################################
 # MAIN STUFF
@@ -170,18 +191,25 @@ def sentiment_analysis():
         tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
         tweets = tweets[pd.notnull(tweets['text'])]
 
+        plot_word_counts(user,tweets)
         plot_sentiment_numbers(user,tweets)
-        plot_avg_per_day(user,tweets)
         plot_sentiment_per_day(user,tweets)
         plot_num_per_month(user,tweets)
 
-
-    tweets =  pd.read_csv('datasets/' + users[0] + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
+    plot_word_counts("hastag_shawInternet",tweets)
     plot_sentiment_numbers("hastag_shawInternet",tweets)
-    plot_avg_per_day("hastag_shawInternet",tweets)
     plot_sentiment_per_day("hastag_shawInternet",tweets)
     plot_num_per_month("hastag_shawInternet",tweets)
+
+    tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    tweets = tweets[pd.notnull(tweets['text'])]
+
+    plot_word_counts("atShawHelp",tweets)
+    plot_sentiment_numbers("atShawHelp",tweets)
+    plot_sentiment_per_day("atShawHelp",tweets)
+    plot_num_per_month("atShawHelp",tweets)
 
 sentiment_analysis()
