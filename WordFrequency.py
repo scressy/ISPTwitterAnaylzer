@@ -49,12 +49,26 @@ def get_most_popular_words(df):
 
     words = count_words(df['text'])
     final = pd.DataFrame(Counter(words).most_common(top_N), columns=['Word', 'Frequency'])
-    # final['sentiment'] = final.apply(lambda x: get_tweet_sentiment(x['Word']), axis=1)
 
     return final.set_index('Word')
 
 def get_keyword_counts(df):
-    keywords = ['outage','outages','lag','slow','down']
+    keywords = ['outage','lag','slow','down','switch']
+
+    df['text'] = df['text'].apply(lambda x: clean_tweet(x))
+
+    words = count_words(df['text'])
+    word_count = Counter(words)
+
+    match_dict = {}
+    for keyword in keywords:
+        match_dict[keyword] = 0
+        for aword, word_freq in zip(word_count.keys(), word_count.values()):
+            if keyword in aword:
+                match_dict[keyword] += word_freq
+
+    final = pd.DataFrame(match_dict.values(), index=keywords, columns=['Frequency'])
+    return final;
 
 ################################################################################################
 # PLOT STUFF
@@ -72,6 +86,17 @@ def plot_word_counts(source,df):
         plt.tight_layout()
         plt.show()
 
+def plot_keywords(source,df):
+    if not df.empty:
+        allCounts = get_keyword_counts(df)
+
+        allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
+
+        plt.title('Keyword Counts', fontsize=18)
+        plt.savefig('plots/' + source + '_keywordCounts')
+
+        plt.tight_layout()
+        plt.show()
 
 ################################################################################################
 # MAIN STUFF
@@ -80,20 +105,21 @@ def plot_word_counts(source,df):
 users = ['ShawHelp','ShawInfo']
 
 def sentiment_analysis():
-    for user in users:
-        tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
-        tweets = tweets[pd.notnull(tweets['text'])]
-
-        plot_word_counts(user,tweets)
-
-    tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    tweets = tweets[pd.notnull(tweets['text'])]
-
-    plot_word_counts("hastag_shawInternet",tweets)
+    # for user in users:
+    #     tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
+    #     tweets = tweets[pd.notnull(tweets['text'])]
+    #
+    #     plot_word_counts(user,tweets)
+    #
+    # tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    # tweets = tweets[pd.notnull(tweets['text'])]
+    #
+    # plot_word_counts("hastag_shawInternet",tweets)
 
     tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
-    plot_word_counts("atShawHelp",tweets)
+    plot_keywords("atShawHelp",tweets)
+    # plot_word_counts("atShawHelp",tweets)
 
 sentiment_analysis()
