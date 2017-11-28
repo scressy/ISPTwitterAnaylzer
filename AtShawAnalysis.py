@@ -112,8 +112,8 @@ def volume_of_tweets():
     tweets =  pd.read_csv('atShaw_replies.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
 
     # get_volume(tweets)
-    # get_response(tweets)
-    sort_by_month(tweets)
+    get_response(tweets)
+    # sort_by_month(tweets)
     # plot_volume_of_tweets("at_shawHelp",tweets)
 
 volume_of_tweets()
