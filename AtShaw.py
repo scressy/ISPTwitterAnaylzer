@@ -37,17 +37,11 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 
 
 #####Shaw ISP test
-# Open/Create a file to append data
-csvFile = open("atShaw_replies.csv", "w")
-#Use csv Writer
-csvWriter = csv.writer(csvFile)
-
-searchQuery = ['@ShawHelp -filter:nativeretweets -from:ShawHelp',
-    '@ShawInfo -filter:nativeretweets -from:ShawInfo',
-    '@ShawHelp filter:replies']
-# for search queries, use
-# http://www.followthehashtag.com/help/hidden-twitter-search-operators-extra-power-followthehashtag/
-tweetCriteria = got.manager.TweetCriteria().setQuerySearch(searchQuery[1]).setSince("2017-11-20").setUntil("2017-11-22")
-tweets = got.manager.TweetManager.getTweets(tweetCriteria)
-for tweet in tweets:
-    csvWriter.writerow([tweet.date, tweet.id, tweet.mentions, tweet.text.encode('utf-8')])
+# tweet = api.statuses_lookup(['643389532105256961'])
+# (a1[0].text)
+# print(tweet.date)
+try:
+    tweet = api.get_status(934107406207926272)
+    print tweet.created_at
+except Exception, e:
+    pass

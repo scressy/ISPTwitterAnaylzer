@@ -20,19 +20,18 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 alltweets = []
 user_name = "ShawHelp"
 
-
 #make initial request for most recent tweets (200 is the maximum allowed count)
-new_tweets = api.user_timeline(screen_name = user_name,count=200)
+new_tweets = api.user_timeline(screen_name = user_name,count=50)
 
 #save most recent tweets
 alltweets.extend(new_tweets)
 
-#save the id of the oldest tweet less one
+# save the id of the oldest tweet less one
 oldest = alltweets[-1].id - 1
+# oldest = 921869903593848832
 
-#keep grabbing tweets until there are no tweets left to grab
-while len(new_tweets) > 0:
-	print ("getting tweets before %s" % (932405207568236546))
+while new_tweets[-1].created_at:
+	print ("getting tweets before %s" % (oldest))
 
 	#all subsiquent requests use the max_id param to prevent duplicates
 	new_tweets = api.user_timeline(screen_name = user_name,count=200,max_id=oldest)
@@ -45,11 +44,20 @@ while len(new_tweets) > 0:
 
 	print "...%s tweets downloaded so far" % (len(alltweets))
 
-#transform the tweepy tweets into a 2D array that will populate the csv
-outtweets = [[tweet.id_str, tweet.created_at, tweet.in_reply_to_status_id, tweet.text.encode("utf-8")] for tweet in alltweets]
+outtweets = []
+# transform the tweepy tweets into a 2D array that will populate the csv
+for tweet in alltweets:
+    try:
+        original_tweet = api.get_status(tweet.in_reply_to_status_id)
+        outtweets.append([tweet.id_str, tweet.created_at, original_tweet.created_at, tweet.in_reply_to_status_id])
+        print(tweet.in_reply_to_status_id)
+    except Exception, e:
+        print("Exception")
+        pass
+# outtweets = [[tweet.id_str, tweet.created_at, tweet.in_reply_to_status_id] for tweet in alltweets]
 
 #write the csv
 with open('%s___tweets.csv' % user_name, 'wb') as f:
 	writer = csv.writer(f)
-	writer.writerow(["id","created_at","in_reply_to_status_id","text"])
+	writer.writerow(["id","created_at","orig_created_at", "in_reply_to_status_id"])
 	writer.writerows(outtweets)
