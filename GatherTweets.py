@@ -9,8 +9,8 @@ import csv
 import pandas as pd
 import got
 
-startDate = '2017-07-11'
-endDate = '2017-11-11'
+startDate = '2016-11-01'
+endDate = '2017-11-27'
 
 #######################################################################
 # SHAW TIMELINES
