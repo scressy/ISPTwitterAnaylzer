@@ -6,7 +6,7 @@ import pandas as pd
 import got
 import numpy as np
 import matplotlib.pyplot as plt
-import textblob
+from textblob import TextBlob
 
 
 ####input your credentials here
@@ -55,16 +55,35 @@ def find_missed_report_dates(rdates, officialrdates, misseddates):
             misseddates.append(rdate)
 
 def find_corresponding_tweets(outage_dates, csv_name, outage_tweets):
-    t =  pd.read_csv(csv_name, names=['tweet_date', 'text'],encoding='utf-8')
-    t = t[pd.notnull(t['text'])]
+    t =  pd.read_csv(csv_name, header=0, names=['tweet_date', 'text'],converters={'tweet_date':str,'text':str})
     tweets = t['text']
     dates = t['tweet_date']
     count = 0
     for tweet in tweets:
         date = dates[count].split(' ')
         if (date[0] in outage_dates):
-            outage_tweets.append(tweet)
+            unitweet = unicode(tweet, 'utf-8')
+            outage_tweets.append(unitweet)
         count = count + 1
+
+#SENTIMENT ANALYSIS FUNCTIONS FROM OTHER FILE
+# Source: http://www.geeksforgeeks.org/twitter-sentiment-analysis-using-python/
+def get_tweet_sentiment(tweet):
+    analysis = TextBlob(tweet)
+    if analysis.sentiment.polarity > 0:
+        return 'positive'
+    elif analysis.sentiment.polarity == 0:
+        return 'neutral'
+    else:
+        return 'negative'
+
+# Source: https://stackoverflow.com/questions/6170246/how-do-i-use-matplotlib-autopct
+def make_autopct(values):
+    def my_autopct(pct):
+        total = sum(values)
+        val = int(round(pct*total/100.0))
+        return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
+    return my_autopct
 
 ##################################
 # Plot functions
@@ -95,6 +114,34 @@ def plot_missed_reports(source,df):
         plt.tight_layout()
         plt.show()
 
+#SENTIMENT ANALYSIS CHART
+# Reference: https://plot.ly/matplotlib/bar-charts/#matplotlib-bar-chart-with-dates
+# Creates a pie chart of postive/negative/neutral for tweets
+def plot_sentiment_numbers(source,df):
+    if not df.empty:
+        df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
+        counts = df['sentiment'].value_counts().to_dict()
+        
+        vals = counts.values()
+        sentiments = counts.keys()
+        
+        fig = plt.figure(figsize=(8,6))
+        
+        plt.axis("equal")
+        
+        patches, texts, autotexts = plt.pie(vals, labels=sentiments, autopct=make_autopct(vals))
+        plt.title('Average Sentiment on Outage Dates', fontsize=18)
+        
+        for t in texts:
+            t.set_size(16)
+        for t in autotexts:
+            t.set_size(14)
+    
+        fig.savefig('plots/' + source + '_sentiment_numbers')
+        
+        plt.tight_layout()
+    plt.show()
+
 
 ##################################
 # Main
@@ -118,15 +165,20 @@ missedrdate_num = len(missed_dates)
 #set up data frame
 d = {'Official': [officialrdate_num], 'Unofficial': [rdate_num]}
 df = pd.DataFrame(d)
-plot_outage_report_numbers('Shaw',df)
+#plot_outage_report_numbers('Shaw',df)
 md = {'Reported': [officialrdate_num], 'Unreported': [missedrdate_num]}
 mdf = pd.DataFrame(md)
-plot_missed_reports('Shaw',mdf)
+#plot_missed_reports('Shaw',mdf)
 
 #Get tweets corresponding to outage dates
 outage_tweets = []
 outage_dates = []
 outage_dates.extend(official_reported_dates)
 outage_dates.extend(missed_dates)
-find_corresponding_tweets(outage_dates, 'ShawInternet_hashtags.csv', outage_tweets)
-find_corresponding_tweets(outage_dates, 'atShaw.csv', outage_tweets)
+find_corresponding_tweets(outage_dates, 'datasets/ShawInternet_hashtags.csv', outage_tweets)
+find_corresponding_tweets(outage_dates, 'datasets/atShawHelp.csv', outage_tweets)
+
+#set up dataframe
+sd = {'text': outage_tweets}
+sdf = pd.DataFrame(sd)
+plot_sentiment_numbers('ShawOutages',sdf)
