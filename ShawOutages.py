@@ -66,6 +66,18 @@ def find_corresponding_tweets(outage_dates, csv_name, outage_tweets):
             outage_tweets.append(unitweet)
         count = count + 1
 
+def find_lag_dates(rdates, csv_name):
+    t =  pd.read_csv(csv_name, header=0, names=['tweet_date', 'text'],converters={'tweet_date':str,'text':str})
+    tweets = t['text']
+    dates = t['tweet_date']
+    count = 0
+    for tweet in tweets:
+        if 'lag' in tweet or 'Lag' in tweet or 'problem' in tweet:
+            date = dates[count].split(' ')
+            if (date[0] not in rdates):
+                rdates.append(date[0])
+        count = count + 1
+
 #SENTIMENT ANALYSIS FUNCTIONS FROM OTHER FILE
 # Source: http://www.geeksforgeeks.org/twitter-sentiment-analysis-using-python/
 def get_tweet_sentiment(tweet):
@@ -165,10 +177,10 @@ missedrdate_num = len(missed_dates)
 #set up data frame
 d = {'Official': [officialrdate_num], 'Unofficial': [rdate_num]}
 df = pd.DataFrame(d)
-#plot_outage_report_numbers('Shaw',df)
+plot_outage_report_numbers('Shaw',df)
 md = {'Reported': [officialrdate_num], 'Unreported': [missedrdate_num]}
 mdf = pd.DataFrame(md)
-#plot_missed_reports('Shaw',mdf)
+plot_missed_reports('Shaw',mdf)
 
 #Get tweets corresponding to outage dates
 outage_tweets = []
@@ -182,3 +194,10 @@ find_corresponding_tweets(outage_dates, 'datasets/atShawHelp.csv', outage_tweets
 sd = {'text': outage_tweets}
 sdf = pd.DataFrame(sd)
 plot_sentiment_numbers('ShawOutages',sdf)
+
+#lag analysis
+lag_dates = []
+find_lag_dates(lag_dates, 'datasets/ShawInternet_hashtags.csv')
+find_lag_dates(lag_dates, 'datasets/atShawHelp.csv')
+print('Number of days lag or internet problems were reported: ', len(lag_dates)) #the number is 349
+
