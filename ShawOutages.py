@@ -6,6 +6,8 @@ import pandas as pd
 import got
 import numpy as np
 import matplotlib.pyplot as plt
+import textblob
+
 
 ####input your credentials here
 consumer_key = 'ejCkcbYsjKRCI6e125bJpG49x'
@@ -21,24 +23,26 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 # Helper functions
 ##################################
 def find_report_dates(rdates, csv_name):
-    t =  pd.read_csv(csv_name, names=['tweet_date', 'text'],encoding='utf-8')
+    t =  pd.read_csv(csv_name, header=0, names=['tweet_date', 'text'],converters={'tweet_date':str,'text':str})
     tweets = t['text']
     dates = t['tweet_date']
     count = 0
     for tweet in tweets:
-        if 'outage' in tweet or 'Outage' in tweet:
+        if 'outage' in tweet or 'Outage' in tweet or 'down' in tweet:
             date = dates[count].split(' ')
             if (date[0] not in rdates):
                 rdates.append(date[0])
         count = count + 1
 
 def find_official_report_dates(rdates):
-    t =  pd.read_csv('ShawHelp_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    t =  pd.read_csv('datasets/ShawHelp_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    t = t[pd.notnull(t['text'])]
+    t = t[pd.notnull(t['tweet_date'])]
     tweets = t['text']
     dates = t['tweet_date']
     count = 0
     for tweet in tweets:
-        if 'outage' in tweet or 'Outage' in tweet:
+        if 'outage' in tweet or 'Outage' in tweet or 'down' in tweet:
             if ('Not' not in tweet and 'not' not in tweet and 'no' not in tweet and 'n\'t' not in tweet):
                 date = dates[count].split(' ')
                 if (date[0] not in rdates):
@@ -50,13 +54,25 @@ def find_missed_report_dates(rdates, officialrdates, misseddates):
         if rdate not in officialrdates:
             misseddates.append(rdate)
 
+def find_corresponding_tweets(outage_dates, csv_name, outage_tweets):
+    t =  pd.read_csv(csv_name, names=['tweet_date', 'text'],encoding='utf-8')
+    t = t[pd.notnull(t['text'])]
+    tweets = t['text']
+    dates = t['tweet_date']
+    count = 0
+    for tweet in tweets:
+        date = dates[count].split(' ')
+        if (date[0] in outage_dates):
+            outage_tweets.append(tweet)
+        count = count + 1
+
 ##################################
 # Plot functions
 ##################################
 
 def plot_outage_report_numbers(source,df):
     if not df.empty:
-        fig = df.iloc[0].plot(kind='bar',rot='horizontal',figsize=(9,6), title='Total Number of Official/Unofficial Outage Reports', ylim=[0,15])
+        fig = df.iloc[0].plot(kind='bar',rot='horizontal',figsize=(9,6), title='Total Number of Official/Unofficial Outage Reports')
         fig.set_xlabel("Reports")
         fig.set_ylabel("Total Number of Outage Reports")
         
@@ -68,7 +84,7 @@ def plot_outage_report_numbers(source,df):
 
 def plot_missed_reports(source,df):
     if not df.empty:
-        fig = df.iloc[0].plot.pie(figsize=(7,7), title='Officially Reported vs Unreported Outages', autopct='%.2f', colors=['c','y'], fontsize=16)
+        fig = df.iloc[0].plot.pie(figsize=(7,5), title='Officially Reported vs Unreported Outages', autopct='%.2f', colors=['c','y'], fontsize=14)
         fig.set_aspect('equal')
         fig.set_xlabel(" ")
         fig.set_ylabel(" ")
@@ -85,8 +101,8 @@ def plot_missed_reports(source,df):
 ##################################
 #find unofficial outage reports
 report_dates = []
-find_report_dates(report_dates, 'shawtags.csv')
-find_report_dates(report_dates, 'atShaw.csv')
+find_report_dates(report_dates, 'datasets/ShawInternet_hashtags.csv')
+find_report_dates(report_dates, 'datasets/atShawHelp.csv')
 rdate_num = len(report_dates)
 
 #find official outage reports
@@ -106,3 +122,11 @@ plot_outage_report_numbers('Shaw',df)
 md = {'Reported': [officialrdate_num], 'Unreported': [missedrdate_num]}
 mdf = pd.DataFrame(md)
 plot_missed_reports('Shaw',mdf)
+
+#Get tweets corresponding to outage dates
+outage_tweets = []
+outage_dates = []
+outage_dates.extend(official_reported_dates)
+outage_dates.extend(missed_dates)
+find_corresponding_tweets(outage_dates, 'ShawInternet_hashtags.csv', outage_tweets)
+find_corresponding_tweets(outage_dates, 'atShaw.csv', outage_tweets)
