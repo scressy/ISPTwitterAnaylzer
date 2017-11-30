@@ -8,6 +8,7 @@ from dateutil import relativedelta as rdelta
 import calendar
 
 import nltk
+nltk.download("stopwords")
 from nltk.corpus import stopwords # Import the stop word list
 from nltk.tokenize import wordpunct_tokenize
 
@@ -55,6 +56,18 @@ def get_most_popular_words(df):
 
     return final.set_index('Word')
 
+def get_most_popular_lengthtwo(df):
+    top_N = 10
+
+    df['text'] = df['text'].apply(lambda x: clean_tweet(x))
+
+    words = count_words(df['text'])
+    two_words = [' '.join(ws) for ws in zip(words, words[1:])]
+
+    final = pd.DataFrame(Counter(two_words).most_common(top_N), columns=['Biphrase', 'Frequency'])
+
+    return final.set_index('Word')
+
 def get_keyword_counts(df):
     keywords = ['out','lag','slow','down','switch']
 
@@ -71,6 +84,47 @@ def get_keyword_counts(df):
                 match_dict[keyword] = word_freq
             elif keyword in aword:
                 match_dict[keyword] += word_freq
+
+    final = pd.DataFrame(match_dict.values(), index=match_dict.keys(), columns=['Frequency'])
+    return final;
+
+def get_location_counts(df):
+    provinces = {
+        'AB': 'Alberta',
+        'BC': 'British Columbia',
+        'MB': 'Manitoba',
+        'NB': 'New Brunswick',
+        'NL': 'Newfoundland and Labrador',
+        'NS': 'Nova Scotia',
+        'ON': 'Ontario',
+        'PE': 'Prince Edward Island',
+        'QC': 'Quebec',
+        'SK': 'Saskatchewan'
+    }
+
+    df['text'] = df['text'].apply(lambda x: clean_tweet(x))
+
+    words = count_words(df['text'])
+    two_words = [' '.join(ws) for ws in zip(words, words[1:])]
+    # three_words = [' '.join(ws) for ws in zip(words, two_words[1:])]
+
+    word_count = Counter(words)
+    two_words_count = Counter(two_words)
+
+    match_dict = {}
+    for province in provinces:
+        match_dict[province] = 0
+        for aword, word_freq in zip(word_count.keys(), word_count.values()):
+            if province == 'NL' and (aword == 'newfoundland' or  aword == 'labrador'):
+                match_dict[province] += word_freq
+            elif province == 'PE' and aword == 'pei':
+                match_dict[province] += word_freq
+            elif province.lower() == aword or provinces[province].lower() == aword:
+                match_dict[province] += word_freq
+        for biword, biword_freq in zip(two_words_count.keys(), two_words_count.values()):
+            if provinces[province].lower() == biword:
+                match_dict[province] += word_freq
+
 
     final = pd.DataFrame(match_dict.values(), index=match_dict.keys(), columns=['Frequency'])
     return final;
@@ -103,6 +157,19 @@ def plot_keywords(source,df):
         plt.tight_layout()
         plt.show()
 
+def plot_location_counts(source,df):
+    if not df.empty:
+        allCounts = get_location_counts(df)
+
+        allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
+
+        plt.title('Province Counts', fontsize=18)
+        plt.savefig('plots/' + source + '_provinceCounts')
+
+        plt.tight_layout()
+        plt.show()
+
+
 ################################################################################################
 # MAIN STUFF
 ################################################################################################
@@ -110,23 +177,24 @@ def plot_keywords(source,df):
 users = ['ShawHelp','ShawInfo']
 
 def word_frequency():
-    for user in users:
-        tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
-        tweets = tweets[pd.notnull(tweets['text'])]
-
-        plot_keywords(user,tweets)
-        plot_word_counts(user,tweets)
-
-    tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    tweets = tweets[pd.notnull(tweets['text'])]
-
-    plot_keywords("hastag_shawInternet",tweets)
-    plot_word_counts("hastag_shawInternet",tweets)
+    # for user in users:
+    #     tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
+    #     tweets = tweets[pd.notnull(tweets['text'])]
+    #
+    #     plot_keywords(user,tweets)
+    #     plot_word_counts(user,tweets)
+    #
+    # tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    # tweets = tweets[pd.notnull(tweets['text'])]
+    #
+    # plot_keywords("hastag_shawInternet",tweets)
+    # plot_word_counts("hastag_shawInternet",tweets)
     #
     tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
     plot_keywords("atShawHelp",tweets)
     plot_word_counts("atShawHelp",tweets)
+    plot_location_counts("atShawHelp", tweets)
 
 word_frequency()
