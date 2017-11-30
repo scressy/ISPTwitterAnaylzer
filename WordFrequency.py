@@ -33,6 +33,9 @@ def clean_tweet(tweet):
 
 def count_words(text):
     stopwords = nltk.corpus.stopwords.words('english')
+    stopwords.append('https')
+    stopwords.append('http')
+    stopwords.append('im')
     # RegEx for stopwords
     RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
     # replace '|'-->' ' and drop all stopwords
