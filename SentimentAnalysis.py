@@ -54,6 +54,8 @@ def get_sentiment_by_day(df):
     df = df.drop(['week_index','text'],axis=1)
     grouped = df.groupby(['sentiment','day_of_week'], sort=False)['day_of_week'].count().unstack('sentiment').fillna(0)
 
+    grouped = grouped.reindex(columns=['positive','neutral','negative'])
+
     return grouped
 
 def get_sentiment_by_month(df):
@@ -63,9 +65,19 @@ def get_sentiment_by_month(df):
 
     df['by_month'] = df['month_index'].apply(lambda x: calendar.month_abbr[x])
     df.sort_values('month_index', inplace=True)
+    df['num_days'] = df['tweet_date'].apply(lambda x: calendar.monthrange(x.year,x.month)[1])
+
     df = df.drop(['month_index','text'],axis=1)
 
-    grouped = df.groupby(['sentiment','by_month'], sort=False)['by_month'].count().unstack('sentiment').fillna(0)
+    grouped = df.groupby(['sentiment','by_month','num_days'], sort=False)['by_month'].count().unstack('sentiment').fillna(0)
+    sentiments = ['positive','neutral','negative']
+    grouped = grouped.reindex(columns=sentiments)
+
+    num_days = grouped.index.get_level_values('num_days')
+    i = 0
+    for s in sentiments:
+        grouped[s] = grouped.apply(lambda x: x[s] / num_days[i], axis=1)
+        i = i + 1
 
     return grouped
 
@@ -82,6 +94,10 @@ def plot_sentiment_numbers(source,df):
 
         vals = counts.values()
         sentiments = counts.keys()
+
+        order = ["positive","neutral","negative"]
+        d = {k:v for v,k in enumerate(order)}
+        sentiments.sort(key=d.get)
 
         fig = plt.figure(figsize=(6,6))
 
@@ -122,10 +138,12 @@ def plot_num_per_month(source,df):
         # total = len(grouped.axes[0])
 
         fig = grouped.plot.line(figsize=(9,6), title='Number of Tweets by Sentiment')
-        fig.set_xlabel("Month")
-        fig.set_ylabel("Total Number of Tweets")
+        plt.xticks(np.arange(12), calendar.month_abbr[1:13])
 
-        plt.title('Total Number of Tweets by Sentiment', fontsize=18)
+        fig.set_xlabel("Month")
+        fig.set_ylabel("Average Number of Tweets (per day)")
+
+        plt.title('Average Number of Tweets by Sentiment', fontsize=18)
         plt.savefig('plots/' + source + '_sentiment_by_month')
 
         plt.tight_layout()
