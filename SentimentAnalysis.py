@@ -111,7 +111,7 @@ def plot_sentiment_numbers(source,df):
         for t in autotexts:
             t.set_size(14)
 
-        fig.savefig('plots/' + source + '_sentiment_numbers')
+        fig.savefig('plots/' + source + '_sentiment_numbers', bbox_inches='tight')
 
         plt.tight_layout()
         plt.show()
@@ -126,7 +126,7 @@ def plot_sentiment_per_day(source,df):
         fig.set_ylabel("Total Number of Tweets")
 
         plt.title('Total Number of Tweets by Sentiment', fontsize=18)
-        plt.savefig('plots/' + source + '_sentiment_by_week')
+        plt.savefig('plots/' + source + '_sentiment_by_week', bbox_inches='tight')
 
         plt.tight_layout()
         plt.show()
@@ -144,7 +144,7 @@ def plot_num_per_month(source,df):
         fig.set_ylabel("Average Number of Tweets (per day)")
 
         plt.title('Average Number of Tweets by Sentiment', fontsize=18)
-        plt.savefig('plots/' + source + '_sentiment_by_month')
+        plt.savefig('plots/' + source + '_sentiment_by_month', bbox_inches='tight')
 
         plt.tight_layout()
         plt.show()

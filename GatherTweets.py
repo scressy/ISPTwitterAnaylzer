@@ -45,7 +45,14 @@ tweetCriteria = got.manager.TweetCriteria().setQuerySearch(searchQuery[0]).setSi
 tweets = got.manager.TweetManager.getTweets(tweetCriteria)
 for tweet in tweets:
     csvWriter.writerow([tweet.date, tweet.text.encode('utf-8')])
+
+csvFile = open("datasets/atShawHelp_hashtags.csv", "w")
+csvWriter = csv.writer(csvFile)
+tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+for tweet in tweets:
+    csvWriter.writerow([tweet.date, tweet.hashtags])
 print("Done!")
+
 
 #######################################################################
 # HASHTAG SHAW

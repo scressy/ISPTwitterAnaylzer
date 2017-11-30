@@ -46,6 +46,19 @@ def count_words(text):
                .str.cat(sep=' ')
                .split())
 
+def count_words_uppercase(text):
+    stopwords = nltk.corpus.stopwords.words('english')
+    stopwords.append('https')
+    stopwords.append('http')
+    stopwords.append('im')
+    # RegEx for stopwords
+    RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
+    # replace '|'-->' ' and drop all stopwords
+
+    return (text.replace([r'\|', RE_stopwords], [' ', ''], regex=True)
+               .str.cat(sep=' ')
+               .split())
+
 def get_most_popular_words(df):
     top_N = 10
 
@@ -104,30 +117,36 @@ def get_location_counts(df):
 
     df['text'] = df['text'].apply(lambda x: clean_tweet(x))
 
-    words = count_words(df['text'])
+    words = count_words_uppercase(df['text'])
     two_words = [' '.join(ws) for ws in zip(words, words[1:])]
     # three_words = [' '.join(ws) for ws in zip(words, two_words[1:])]
 
     word_count = Counter(words)
     two_words_count = Counter(two_words)
 
+    print(two_words_count["British Columbia"])
+
     match_dict = {}
     for province in provinces:
-        match_dict[province] = 0
+        match_dict[provinces[province]] = 0
         for aword, word_freq in zip(word_count.keys(), word_count.values()):
-            if province == 'NL' and (aword == 'newfoundland' or  aword == 'labrador'):
-                match_dict[province] += word_freq
-            elif province == 'PE' and aword == 'pei':
-                match_dict[province] += word_freq
-            elif province.lower() == aword or provinces[province].lower() == aword:
-                match_dict[province] += word_freq
+            if province == 'NL' and (aword.lower() == 'newfoundland' or aword.lower() == 'labrador'):
+                match_dict[provinces[province]] += word_freq
+            elif province == 'PE' and aword.lower() == 'pei':
+                match_dict[provinces[province]] += word_freq
+            elif province == aword or provinces[province].lower() == aword.lower():
+                match_dict[provinces[province]] += word_freq
         for biword, biword_freq in zip(two_words_count.keys(), two_words_count.values()):
-            if provinces[province].lower() == biword:
-                match_dict[province] += word_freq
-
+            if provinces[province].lower() == biword.lower():
+                print("yo")
+                match_dict[provinces[province]] += biword_freq
 
     final = pd.DataFrame(match_dict.values(), index=match_dict.keys(), columns=['Frequency'])
-    return final;
+
+    print("************** Counts of Locations **************")
+    print(final);
+
+
 
 ################################################################################################
 # PLOT STUFF
@@ -137,10 +156,10 @@ def plot_word_counts(source,df):
     if not df.empty:
         allCounts = get_most_popular_words(df)
 
-        fig = allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
+        fig = allCounts.plot.bar(rot=0, figsize=(10,6), width=0.8)
 
         plt.title('Most Frequent Words', fontsize=18)
-        plt.savefig('plots/' + source + '_mostFrequentWords')
+        plt.savefig('plots/' + source + '_mostFrequentWords', bbox_inches='tight')
 
         plt.tight_layout()
         plt.show()
@@ -149,26 +168,13 @@ def plot_keywords(source,df):
     if not df.empty:
         allCounts = get_keyword_counts(df)
 
-        allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
+        allCounts.plot.bar(rot=0, figsize=(10,6), width=0.8)
 
         plt.title('Keyword Counts', fontsize=18)
-        plt.savefig('plots/' + source + '_keywordCounts')
+        plt.savefig('plots/' + source + '_keywordCounts', bbox_inches='tight')
 
         plt.tight_layout()
         plt.show()
-
-def plot_location_counts(source,df):
-    if not df.empty:
-        allCounts = get_location_counts(df)
-
-        allCounts.plot.bar(rot=0, figsize=(12,6), width=0.8)
-
-        plt.title('Province Counts', fontsize=18)
-        plt.savefig('plots/' + source + '_provinceCounts')
-
-        plt.tight_layout()
-        plt.show()
-
 
 ################################################################################################
 # MAIN STUFF
@@ -189,12 +195,12 @@ def word_frequency():
     #
     # plot_keywords("hastag_shawInternet",tweets)
     # plot_word_counts("hastag_shawInternet",tweets)
-    #
+
     tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
-
-    plot_keywords("atShawHelp",tweets)
-    plot_word_counts("atShawHelp",tweets)
-    plot_location_counts("atShawHelp", tweets)
+    #
+    # plot_keywords("atShawHelp",tweets)
+    # plot_word_counts("atShawHelp",tweets)
+    get_location_counts(tweets)
 
 word_frequency()
