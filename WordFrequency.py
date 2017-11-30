@@ -183,24 +183,24 @@ def plot_keywords(source,df):
 users = ['ShawHelp','ShawInfo']
 
 def word_frequency():
-    # for user in users:
-    #     tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
-    #     tweets = tweets[pd.notnull(tweets['text'])]
-    #
-    #     plot_keywords(user,tweets)
-    #     plot_word_counts(user,tweets)
-    #
-    # tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    # tweets = tweets[pd.notnull(tweets['text'])]
-    #
-    # plot_keywords("hastag_shawInternet",tweets)
-    # plot_word_counts("hastag_shawInternet",tweets)
+    for user in users:
+        tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
+        tweets = tweets[pd.notnull(tweets['text'])]
+
+        plot_keywords(user,tweets)
+        plot_word_counts(user,tweets)
+
+    tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    tweets = tweets[pd.notnull(tweets['text'])]
+
+    plot_keywords("hastag_shawInternet",tweets)
+    plot_word_counts("hastag_shawInternet",tweets)
 
     tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
-    #
-    # plot_keywords("atShawHelp",tweets)
-    # plot_word_counts("atShawHelp",tweets)
+    
+    plot_keywords("atShawHelp",tweets)
+    plot_word_counts("atShawHelp",tweets)
     get_location_counts(tweets)
 
 word_frequency()
