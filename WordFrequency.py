@@ -56,7 +56,7 @@ def get_most_popular_words(df):
     return final.set_index('Word')
 
 def get_keyword_counts(df):
-    keywords = ['outage','lag','slow','down','switch']
+    keywords = ['out','lag','slow','down','switch']
 
     df['text'] = df['text'].apply(lambda x: clean_tweet(x))
 
@@ -67,10 +67,12 @@ def get_keyword_counts(df):
     for keyword in keywords:
         match_dict[keyword] = 0
         for aword, word_freq in zip(word_count.keys(), word_count.values()):
-            if keyword in aword:
+            if keyword == "out":
+                match_dict[keyword] = word_freq
+            elif keyword in aword:
                 match_dict[keyword] += word_freq
 
-    final = pd.DataFrame(match_dict.values(), index=keywords, columns=['Frequency'])
+    final = pd.DataFrame(match_dict.values(), index=match_dict.keys(), columns=['Frequency'])
     return final;
 
 ################################################################################################
@@ -112,6 +114,7 @@ def word_frequency():
         tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
         tweets = tweets[pd.notnull(tweets['text'])]
 
+        plot_keywords(user,tweets)
         plot_word_counts(user,tweets)
 
     tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
