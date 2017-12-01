@@ -45,25 +45,17 @@ def get_volume(df):
 
 # get_response takes in a dataframe and returns the mean response time of the dataframe
 def get_response(df):
-    df['tvalue'] = df.index
-    df['by_time'] = pd.to_datetime(df['tweet_date'], errors='coerce')
-    df['delta'] = (df['by_time'].shift()-df['by_time']).fillna(pd.to_timedelta("00:00:00"))
+    df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
+    df['orig_created_at'] = pd.to_datetime(df['orig_created_at'], errors='coerce')
+
+    # getting the time delta and converting to day, hours, min, seconds
+    df['delta'] = (df['created_at']-df['orig_created_at']).fillna(pd.to_timedelta("00:00:00"))
     df['delta'] = df['delta'].dt.total_seconds()
 
-    grouped = df['delta'].mean()
-    grouped = timedelta(seconds=grouped)
-
-    if(debug):
-        print(grouped)
-    return grouped
-
-def sort_by_month(df):
-    df['by_month'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.month
-    grouped = df.groupby(['by_month','text'])['by_month']
-
-    if(debug):
-        print(grouped)
-    return grouped
+    # find the average
+    mean = df['delta'].mean()
+    mean = timedelta(seconds=mean)
+    return mean
 
 ################################################################################################
 # PLOT STUFF
@@ -84,19 +76,6 @@ def plot_volume_of_tweets(source,df):
         plt.tight_layout()
         plt.show()
 
-def plot_responses(source,df):
-        grouped = get_volume(df)
-
-        fig = grouped.plot.line(kind='bar',rot='horizontal',figsize=(9,6), style='-', legend=False, title="Average Response per Month")
-        fig.set_xlabel("Date")
-        fig.set_ylabel("Number of Tweets")
-
-        # used to save the file
-        plt.savefig('plots/' + source + '_volume')
-
-        plt.tight_layout()
-        plt.show()
-
 # Reference: https://plot.ly/matplotlib/bar-charts/#matplotlib-bar-chart-with-dates
 
 
@@ -109,11 +88,11 @@ startDate = '2017-01-01'
 endDate = '2017-11-11'
 
 def volume_of_tweets():
-    tweets =  pd.read_csv('atShaw_replies.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
-
+    # tweets =  pd.read_csv('atShaw_replies.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
     # get_volume(tweets)
-    get_response(tweets)
-    # sort_by_month(tweets)
+    tweets =  pd.read_csv('ShawHelp_tweets_replied_to.csv', names=['created_at', 'orig_created_at'],encoding='utf-8',skipinitialspace=True)
+
+    print(get_response(tweets))
     # plot_volume_of_tweets("at_shawHelp",tweets)
 
 volume_of_tweets()
