@@ -99,7 +99,7 @@ def plot_sentiment_numbers(source,df):
         d = {k:v for v,k in enumerate(order)}
         sentiments.sort(key=d.get)
 
-        fig = plt.figure(figsize=(6,6))
+        fig = plt.figure(figsize=(7,7))
 
         plt.axis("equal")
 
@@ -121,7 +121,7 @@ def plot_sentiment_per_day(source,df):
     if not df.empty:
         grouped = get_sentiment_by_day(df)
 
-        fig = grouped.plot(kind='bar',stacked=True,rot='horizontal',figsize=(9,6), title='Number of Tweets by Sentiment')
+        fig = grouped.plot(kind='bar',stacked=True,rot='horizontal',figsize=(16,9), title='Number of Tweets by Sentiment')
         fig.set_xlabel("Day of the Week")
         fig.set_ylabel("Total Number of Tweets")
 
@@ -137,7 +137,7 @@ def plot_num_per_month(source,df):
 
         # total = len(grouped.axes[0])
 
-        fig = grouped.plot.line(figsize=(9,6), title='Number of Tweets by Sentiment')
+        fig = grouped.plot.line(figsize=(16,9), title='Number of Tweets by Sentiment')
         plt.xticks(np.arange(12), calendar.month_abbr[1:13])
 
         fig.set_xlabel("Month")
