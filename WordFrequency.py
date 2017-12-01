@@ -78,9 +78,23 @@ def get_most_popular_lengthtwo(df):
     words = count_words(df['text'])
     two_words = [' '.join(ws) for ws in zip(words, words[1:])]
 
-    final = pd.DataFrame(Counter(two_words).most_common(top_N), columns=['Biphrase', 'Frequency'])
+    final = pd.DataFrame(Counter(two_words).most_common(top_N), columns=['Words', 'Frequency'])
+    final = final.set_index('Words')
 
-    return final.set_index('Word')
+    print("\n************** Top 10 Words (of Length 2) **************")
+    print(final)
+
+def get_most_popular_hashtags(df):
+    top_N = 10
+
+    df['hashtags'] = df['hashtags'].apply(lambda x: clean_tweet(x))
+
+    hashtags = count_words(df['hashtags'])
+    final = pd.DataFrame(Counter(hashtags).most_common(top_N), columns=['Hashtag', 'Frequency'])
+    final = final.set_index('Hashtag')
+
+    print("\n************** Top 10 Hashtags **************")
+    print(final)
 
 def get_keyword_counts(df):
     keywords = ['out','lag','slow','down','switch']
@@ -144,17 +158,6 @@ def get_location_counts(df):
     print("\n************** Counts of Locations **************")
     print(final);
 
-def get_most_popular_hashtags(df):
-    top_N = 10
-
-    df['hashtags'] = df['hashtags'].apply(lambda x: clean_tweet(x))
-
-    hashtags = count_words(df['hashtags'])
-    final = pd.DataFrame(Counter(hashtags).most_common(top_N), columns=['Hashtag', 'Frequency'])
-    final = final.set_index('Hashtag')
-
-    print("\n************** Top 10 Hashtags **************")
-    print(final)
 
 ################################################################################################
 # PLOT STUFF
@@ -210,6 +213,7 @@ def word_frequency():
     plot_keywords("atShawHelp",tweets)
     plot_word_counts("atShawHelp",tweets)
     get_location_counts(tweets)
+    get_most_popular_lengthtwo(tweets)
 
     tweets = pd.read_csv('datasets/atShawHelp_hashtags.csv', names=['tweet_date', 'hashtags'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['hashtags'])]
