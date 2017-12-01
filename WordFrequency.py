@@ -37,6 +37,7 @@ def count_words(text):
     stopwords.append('https')
     stopwords.append('http')
     stopwords.append('im')
+    stopwords.append('# ')
     # RegEx for stopwords
     RE_stopwords = r'\b(?:{})\b'.format('|'.join(stopwords))
     # replace '|'-->' ' and drop all stopwords
@@ -124,8 +125,6 @@ def get_location_counts(df):
     word_count = Counter(words)
     two_words_count = Counter(two_words)
 
-    print(two_words_count["British Columbia"])
-
     match_dict = {}
     for province in provinces:
         match_dict[provinces[province]] = 0
@@ -138,15 +137,24 @@ def get_location_counts(df):
                 match_dict[provinces[province]] += word_freq
         for biword, biword_freq in zip(two_words_count.keys(), two_words_count.values()):
             if provinces[province].lower() == biword.lower():
-                print("yo")
                 match_dict[provinces[province]] += biword_freq
 
     final = pd.DataFrame(match_dict.values(), index=match_dict.keys(), columns=['Frequency'])
 
-    print("************** Counts of Locations **************")
+    print("\n************** Counts of Locations **************")
     print(final);
 
+def get_most_popular_hashtags(df):
+    top_N = 10
 
+    df['hashtags'] = df['hashtags'].apply(lambda x: clean_tweet(x))
+
+    hashtags = count_words(df['hashtags'])
+    final = pd.DataFrame(Counter(hashtags).most_common(top_N), columns=['Hashtag', 'Frequency'])
+    final = final.set_index('Hashtag')
+
+    print("\n************** Top 10 Hashtags **************")
+    print(final)
 
 ################################################################################################
 # PLOT STUFF
@@ -183,24 +191,28 @@ def plot_keywords(source,df):
 users = ['ShawHelp','ShawInfo']
 
 def word_frequency():
-    for user in users:
-        tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
-        tweets = tweets[pd.notnull(tweets['text'])]
-
-        plot_keywords(user,tweets)
-        plot_word_counts(user,tweets)
-
-    tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    # for user in users:
+    #     tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
+    #     tweets = tweets[pd.notnull(tweets['text'])]
+    #
+    #     plot_keywords(user,tweets)
+    #     plot_word_counts(user,tweets)
+    #
+    # tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
+    # tweets = tweets[pd.notnull(tweets['text'])]
+    #
+    # plot_keywords("hastag_shawInternet",tweets)
+    # plot_word_counts("hastag_shawInternet",tweets)
+    #
+    tweets = pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
-    plot_keywords("hastag_shawInternet",tweets)
-    plot_word_counts("hastag_shawInternet",tweets)
-
-    tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    tweets = tweets[pd.notnull(tweets['text'])]
-    
     plot_keywords("atShawHelp",tweets)
     plot_word_counts("atShawHelp",tweets)
     get_location_counts(tweets)
+
+    tweets = pd.read_csv('datasets/atShawHelp_hashtags.csv', names=['tweet_date', 'hashtags'],encoding='utf-8')
+    tweets = tweets[pd.notnull(tweets['hashtags'])]
+    get_most_popular_hashtags(tweets)
 
 word_frequency()
