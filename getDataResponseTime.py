@@ -53,8 +53,6 @@ alltweets.extend(new_tweets)
 oldest = alltweets[-1].id - 1
 print("Oldest: " + str(oldest))
 
-setQuerySearch = []
-
 # using getoldtweets to grab tweet timeline
 csvFile = open("%s_timeline.csv" % user_name, "w")
 csvWriter = csv.writer(csvFile)
@@ -91,14 +89,12 @@ while (len(new_tweets) > 0 and not stop):
 	for tweet in new_tweets:
 		if (tweet.id == endTweet):
 			stop = True
-			print("****Stop == true! **** id: " + str(tweet.id))
 			break
 		else:
 			print("tweet id: " + str(tweet.id))
 			count_to_cutoff = count_to_cutoff-1
 
-	print("count_to_cutoff end: " + str(count_to_cutoff))
-
+	# remove the tweets after the end time
 	if(count_to_cutoff > 0):
 		new_tweets = new_tweets[:-count_to_cutoff or None]
 
@@ -114,8 +110,7 @@ while (len(new_tweets) > 0 and not stop):
 
 outtweets = []
 
-
-# remove the tweets before the startTime (at the top of the csv)
+# remove the tweets before the start time (at the top of the csv)
 stop = False
 count_to_cutoff = 0
 
@@ -125,12 +120,8 @@ for tweet in alltweets:
 	else:
 		count_to_cutoff = count_to_cutoff + 1
 
-print("count_to_cutoff start: " + str(count_to_cutoff))
-
 if(count_to_cutoff > 0):
 	alltweets = alltweets[count_to_cutoff:]
-
-print("Length of alltweets: " + str(len(alltweets)))
 
 # this code is for testing
 # outtweets = [[tweet.id_str, tweet.created_at, tweet.in_reply_to_status_id] for tweet in alltweets]
@@ -148,6 +139,7 @@ for tweet in alltweets:
 
 # write the csv
 # the resultant CSV file only contains the tweet reply date, and the original tweet date.
+# use this _tweets_replied_to csv for the response time-delta
 with open('%s_tweets_replied_to.csv' % user_name, 'wb') as f:
 	writer = csv.writer(f)
 	# writer.writerow(["created_at","orig_created_at"])
