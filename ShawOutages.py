@@ -42,7 +42,7 @@ def find_official_report_dates(rdates):
     dates = t['tweet_date']
     count = 0
     for tweet in tweets:
-        if 'outage' in tweet or 'Outage' in tweet or 'down' in tweet:
+        if 'outage' in tweet or 'Outage' in tweet or 'down ' in tweet:
             if ('Not' not in tweet and 'not' not in tweet and 'no' not in tweet and 'n\'t' not in tweet):
                 date = dates[count].split(' ')
                 if (date[0] not in rdates):
@@ -72,7 +72,7 @@ def find_lag_dates(rdates, csv_name):
     dates = t['tweet_date']
     count = 0
     for tweet in tweets:
-        if 'lag' in tweet or 'Lag' in tweet or 'problem' in tweet:
+        if 'lag' in tweet or 'Lag' in tweet or 'problem' in tweet or 'slow' in tweet or 'Slow' in tweet:
             date = dates[count].split(' ')
             if (date[0] not in rdates):
                 rdates.append(date[0])
@@ -199,5 +199,5 @@ plot_sentiment_numbers('ShawOutages',sdf)
 lag_dates = []
 find_lag_dates(lag_dates, 'datasets/ShawInternet_hashtags.csv')
 find_lag_dates(lag_dates, 'datasets/atShawHelp.csv')
-print('Number of days lag or internet problems were reported: ', len(lag_dates)) #the number is 349
+print('Number of days lag or internet problems were reported: ', len(lag_dates)) #the number is 376
 
