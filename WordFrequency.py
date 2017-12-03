@@ -125,9 +125,10 @@ def get_keyword_counts(df):
     for keyword in keywords:
         match_dict[keyword] = 0
         for aword, word_freq in zip(word_count.keys(), word_count.values()):
-            if keyword == "out":
-                match_dict[keyword] = word_freq
-            elif keyword in aword:
+            if (keyword == "out" and aword == "out") or (keyword == "out" and aword == "outage"):
+                print(word_freq)
+                match_dict[keyword] += word_freq
+            elif keyword != "out" and keyword in aword:
                 match_dict[keyword] += word_freq
 
     final = pd.DataFrame(match_dict.values(), index=match_dict.keys(), columns=['Frequency'])
