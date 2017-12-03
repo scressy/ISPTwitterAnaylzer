@@ -84,6 +84,23 @@ def get_most_popular_lengthtwo(df):
     print("\n************** Top 10 Words (of Length 2) **************")
     print(final)
 
+
+def get_most_popular_lengththree(df):
+    top_N = 10
+
+    df['text'] = df['text'].apply(lambda x: clean_tweet(x))
+
+    words = count_words(df['text'])
+    two_words = [' '.join(ws) for ws in zip(words, words[1:])]
+    three_words = [' '.join(ws) for ws in zip(words, two_words[1:])]
+
+    final = pd.DataFrame(Counter(three_words).most_common(top_N), columns=['Words', 'Frequency'])
+    final = final.set_index('Words')
+
+    print("\n************** Top 10 Words (of Length 3) **************")
+    print(final)
+
+
 def get_most_popular_hashtags(df):
     top_N = 10
 
@@ -194,19 +211,19 @@ def plot_keywords(source,df):
 users = ['ShawHelp','ShawInfo']
 
 def word_frequency():
-    # for user in users:
-    #     tweets =  pd.read_csv('datasets/' + user + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
-    #     tweets = tweets[pd.notnull(tweets['text'])]
-    #
-    #     plot_keywords(user,tweets)
-    #     plot_word_counts(user,tweets)
-    #
-    # tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    # tweets = tweets[pd.notnull(tweets['text'])]
-    #
-    # plot_keywords("hastag_shawInternet",tweets)
-    # plot_word_counts("hastag_shawInternet",tweets)
-    #
+    print("\n=================================================================")
+    print("Word Frequency Analysis of Tweets from ShawHelp")
+    print("=================================================================")
+
+    tweets =  pd.read_csv('datasets/' + users[0] + '_tweets.csv', names=['tweet_date', 'text'],encoding='utf-8',na_values="NaN")
+    tweets = tweets[pd.notnull(tweets['text'])]
+
+    get_most_popular_lengthtwo(tweets)
+    get_most_popular_lengththree(tweets)
+
+    print("\n=================================================================")
+    print("Word Frequency Analysis of Tweets @ShawHelp")
+    print("=================================================================")
     tweets = pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
 
@@ -214,6 +231,7 @@ def word_frequency():
     plot_word_counts("atShawHelp",tweets)
     get_location_counts(tweets)
     get_most_popular_lengthtwo(tweets)
+    get_most_popular_lengththree(tweets)
 
     tweets = pd.read_csv('datasets/atShawHelp_hashtags.csv', names=['tweet_date', 'hashtags'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['hashtags'])]
