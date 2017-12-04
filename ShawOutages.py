@@ -168,11 +168,13 @@ report_dates = []
 find_report_dates(report_dates, 'datasets/ShawInternet_hashtags.csv')
 find_report_dates(report_dates, 'datasets/atShawHelp.csv')
 rdate_num = len(report_dates)
+print('Number of days unofficial outages were reported: ', rdate_num) #the number is 392
 
 #find official outage reports
 official_reported_dates = []
 find_official_report_dates(official_reported_dates)
 officialrdate_num = len(official_reported_dates)
+print('Number of days official outages were reported: ', officialrdate_num) #the number is 225
 
 #find missed report dates
 missed_dates = []
@@ -191,7 +193,7 @@ mdf = pd.DataFrame(md)
 outage_tweets = []
 outage_dates = []
 outage_dates.extend(official_reported_dates)
-outage_dates.extend(missed_dates)
+#outage_dates.extend(missed_dates)
 find_corresponding_tweets(outage_dates, 'datasets/ShawInternet_hashtags.csv', outage_tweets)
 find_corresponding_tweets(outage_dates, 'datasets/atShawHelp.csv', outage_tweets)
 

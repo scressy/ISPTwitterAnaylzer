@@ -1,4 +1,4 @@
-# ISPTwitterAnaylzer
+# ISPTwitterAnalyzer
 
 ## instructions
 
