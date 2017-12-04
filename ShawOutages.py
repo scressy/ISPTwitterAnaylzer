@@ -7,17 +7,12 @@ import got
 import numpy as np
 import matplotlib.pyplot as plt
 from textblob import TextBlob
+from collections import Counter
 
+plt.style.use('ggplot')
 
-####input your credentials here
-consumer_key = 'ejCkcbYsjKRCI6e125bJpG49x'
-consumer_secret = 'qqEeJUPeFdlZyETjx6hJxfFw6i1gYWCINpQvdwdJzh7rMKttTu'
-access_token = '919666743655538688-bCIJ3vxitH4jX1XE7xj1sUniYGR5pjH'
-access_token_secret = 'bDrJFwMNPd54FeeMoDMewBoAR5FQoLySc1ILBH9bs8x98'
-
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth,wait_on_rate_limit=True)
+all_unofficial_dates = []
+all_official_dates   = []
 
 ##################################
 # Helper functions
@@ -30,6 +25,7 @@ def find_report_dates(rdates, csv_name):
     for tweet in tweets:
         if 'outage' in tweet or 'Outage' in tweet or 'down' in tweet:
             date = dates[count].split(' ')
+            all_unofficial_dates.append(date[0])
             if (date[0] not in rdates):
                 rdates.append(date[0])
         count = count + 1
@@ -40,11 +36,13 @@ def find_official_report_dates(rdates):
     t = t[pd.notnull(t['tweet_date'])]
     tweets = t['text']
     dates = t['tweet_date']
+
     count = 0
     for tweet in tweets:
         if 'outage' in tweet or 'Outage' in tweet or 'down ' in tweet:
             if ('Not' not in tweet and 'not' not in tweet and 'no' not in tweet and 'n\'t' not in tweet):
                 date = dates[count].split(' ')
+                all_official_dates.append(date[0])
                 if (date[0] not in rdates):
                     rdates.append(date[0])
         count = count + 1
@@ -97,6 +95,14 @@ def make_autopct(values):
         return '{p:.2f}%  ({v:d})'.format(p=pct,v=val)
     return my_autopct
 
+
+def findOutagesByDayofWeek(dateList):
+    df = pd.DataFrame(Counter(dateList).most_common(5), columns=['Date', 'Frequency'])
+    df = df.set_index('Date')
+
+    print(df)
+
+
 ##################################
 # Plot functions
 ##################################
@@ -106,23 +112,23 @@ def plot_outage_report_numbers(source,df):
         fig = df.iloc[0].plot(kind='bar',rot='horizontal',figsize=(9,6), title='Total Number of Official/Unofficial Outage Reports')
         fig.set_xlabel("Reports")
         fig.set_ylabel("Total Number of Outage Reports")
-        
+
         plt.title('Total Number of Official/Unofficial Outage Reports', fontsize=18)
         plt.savefig('plots/' + source + '_outage_report_numbers')
-        
+
         plt.tight_layout()
         plt.show()
 
 def plot_missed_reports(source,df):
     if not df.empty:
-        fig = df.iloc[0].plot.pie(figsize=(7,5), title='Officially Reported vs Unreported Outages', autopct='%.2f', colors=['c','y'], fontsize=14)
+        fig = df.iloc[0].plot.pie(figsize=(7,5), title='Officially Reported vs Unreported Outages', autopct='%.2f', fontsize=14)
         fig.set_aspect('equal')
         fig.set_xlabel(" ")
         fig.set_ylabel(" ")
-        
+
         plt.title('Officially Reported vs Unreported Outages', fontsize=18)
         plt.savefig('plots/' + source + '_outage_missed_reports')
-        
+
         plt.tight_layout()
         plt.show()
 
@@ -133,27 +139,26 @@ def plot_sentiment_numbers(source,df):
     if not df.empty:
         df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
         counts = df['sentiment'].value_counts().to_dict()
-        
+
         vals = counts.values()
         sentiments = counts.keys()
-        
+
         fig = plt.figure(figsize=(8,6))
-        
+
         plt.axis("equal")
-        
+
         patches, texts, autotexts = plt.pie(vals, labels=sentiments, autopct=make_autopct(vals))
         plt.title('Average Sentiment on Outage Dates', fontsize=18)
-        
+
         for t in texts:
             t.set_size(16)
         for t in autotexts:
             t.set_size(14)
-    
+
         fig.savefig('plots/' + source + '_sentiment_numbers')
-        
+
         plt.tight_layout()
     plt.show()
-
 
 ##################################
 # Main
@@ -177,10 +182,10 @@ missedrdate_num = len(missed_dates)
 #set up data frame
 d = {'Official': [officialrdate_num], 'Unofficial': [rdate_num]}
 df = pd.DataFrame(d)
-plot_outage_report_numbers('Shaw',df)
+# plot_outage_report_numbers('Shaw',df)
 md = {'Reported': [officialrdate_num], 'Unreported': [missedrdate_num]}
 mdf = pd.DataFrame(md)
-plot_missed_reports('Shaw',mdf)
+# plot_missed_reports('Shaw',mdf)
 
 #Get tweets corresponding to outage dates
 outage_tweets = []
@@ -193,7 +198,7 @@ find_corresponding_tweets(outage_dates, 'datasets/atShawHelp.csv', outage_tweets
 #set up dataframe
 sd = {'text': outage_tweets}
 sdf = pd.DataFrame(sd)
-plot_sentiment_numbers('ShawOutages',sdf)
+# plot_sentiment_numbers('ShawOutages',sdf)
 
 #lag analysis
 lag_dates = []
@@ -201,3 +206,12 @@ find_lag_dates(lag_dates, 'datasets/ShawInternet_hashtags.csv')
 find_lag_dates(lag_dates, 'datasets/atShawHelp.csv')
 print('Number of days lag or internet problems were reported: ', len(lag_dates)) #the number is 376
 
+
+
+print("\n=================================================================")
+print("Finding most common dates...")
+print("=================================================================")
+print("\n************** Unreported **************")
+findOutagesByDayofWeek(all_unofficial_dates)
+print("\n************** Reported **************")
+findOutagesByDayofWeek(all_official_dates)
