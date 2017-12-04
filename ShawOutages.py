@@ -72,6 +72,7 @@ def find_lag_dates(rdates, csv_name):
     for tweet in tweets:
         if 'lag' in tweet or 'Lag' in tweet or 'problem' in tweet or 'slow' in tweet or 'Slow' in tweet:
             date = dates[count].split(' ')
+            all_unofficial_dates.append(date[0])
             if (date[0] not in rdates):
                 rdates.append(date[0])
         count = count + 1
