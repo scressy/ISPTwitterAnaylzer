@@ -230,3 +230,9 @@ findTopOutageDays(all_unofficial_dates)
 print("\n************** Reported **************")
 findOutagesByDayofWeek(all_official_dates)
 findTopOutageDays(all_official_dates)
+
+print("\nDid Shaw report an outage on April 27th, 2017?")
+if '2017-04-27' in all_official_dates:
+    print("YES! There was %i reported outages." % Counter(all_official_dates)['2017-04-27'])
+else:
+    print("NO!")
