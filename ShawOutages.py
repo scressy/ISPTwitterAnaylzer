@@ -98,7 +98,17 @@ def make_autopct(values):
 
 
 def findOutagesByDayofWeek(dateList):
-    df = pd.DataFrame(Counter(dateList).most_common(5), columns=['Date', 'Frequency'])
+    d = Counter(dateList)
+    df = pd.DataFrame.from_dict(d, orient='index').reset_index()
+    df = df.rename(columns={'index':'date', 0:'count'})
+    df['date'] = pd.to_datetime(df['date'])
+
+    grouped = df.groupby([df.date.dt.year, df.date.dt.month]).sum()
+
+    print(grouped)
+
+def findTopOutageDays(dateList):
+    df = pd.DataFrame(Counter(dateList).most_common(10), columns=['Date', 'Frequency'])
     df = df.set_index('Date')
 
     print(df)
@@ -212,9 +222,11 @@ print('Number of days lag or internet problems were reported: ', len(lag_dates))
 
 
 print("\n=================================================================")
-print("Finding most common dates...")
+print("Finding most common dates and patterns...")
 print("=================================================================")
 print("\n************** Unreported **************")
 findOutagesByDayofWeek(all_unofficial_dates)
+findTopOutageDays(all_unofficial_dates)
 print("\n************** Reported **************")
 findOutagesByDayofWeek(all_official_dates)
+findTopOutageDays(all_official_dates)
