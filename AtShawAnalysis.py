@@ -90,9 +90,17 @@ endDate = '2017-11-11'
 def volume_of_tweets():
     # tweets =  pd.read_csv('atShaw_replies.csv', names=['tweet_date', 'text'],encoding='utf-8',skipinitialspace=True)
     # get_volume(tweets)
-    tweets =  pd.read_csv('ShawHelp_tweets_replied_to.csv', names=['created_at', 'orig_created_at'],encoding='utf-8',skipinitialspace=True)
+    tweets =  pd.read_csv('ShawInfo_tweets_replied_to.csv', names=['created_at', 'orig_created_at'],encoding='utf-8',skipinitialspace=True)
 
     print(get_response(tweets))
     # plot_volume_of_tweets("at_shawHelp",tweets)
+
+def look_up(id):
+    try:
+        tweet = api.get_status(id)
+        print tweet.created_at
+    except Exception, e:
+        pass
+
 
 volume_of_tweets()
