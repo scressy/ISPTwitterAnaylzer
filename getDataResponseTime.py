@@ -34,34 +34,35 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 
 #initialize a list to hold all the tweepy Tweets
 alltweets = []
-
+outtweets = []
 #######################################################################
 # INITIALIZE USERS, DATES, SEARCH QUERIES
 #######################################################################
-user_name = "ShawHelp"
-date_start = "2017-11-20"
-date_end = "2017-11-30"				# this date is NOT included in timeline csv
+users = ["ShawHelp", "ShawInfo"]
+user_name = users[0]
+date_start = '2016-11-01'
+date_end = '2017-11-27'				# this date is NOT included in timeline csv
 searchQuery = "from:%s" % user_name
 
 #make initial request for most recent tweets (200 is the maximum allowed count)
-new_tweets = api.user_timeline(screen_name = user_name,count=5)
+# new_tweets = api.user_timeline(screen_name = user_name,count=5)
 
 #save most recent tweets
-alltweets.extend(new_tweets)
+# alltweets.extend(new_tweets)
 
 # save the id of the oldest tweet less one
-oldest = alltweets[-1].id - 1
-print("Oldest: " + str(oldest))
+# oldest = alltweets[-1].id - 1
+# print("Oldest: " + str(oldest))
 
 # using getoldtweets to grab tweet timeline
-csvFile = open("%s_timeline.csv" % user_name, "w")
-csvWriter = csv.writer(csvFile)
-tweetCriteria = got.manager.TweetCriteria().setQuerySearch(searchQuery).setSince(date_start).setUntil(date_end)
-tweets = got.manager.TweetManager.getTweets(tweetCriteria)
-for tweet in tweets:
-	csvWriter.writerow([tweet.id])
-    # csvWriter.writerow([tweet.id, tweet.date, tweet.text.encode('utf-8')])
-csvFile.close()
+# csvFile = open("%s_timeline.csv" % user_name, "w")
+# csvWriter = csv.writer(csvFile)
+# tweetCriteria = got.manager.TweetCriteria().setQuerySearch(searchQuery).setSince(date_start).setUntil(date_end)
+# tweets = got.manager.TweetManager.getTweets(tweetCriteria)
+# for tweet in tweets:
+# 	csvWriter.writerow([tweet.id])
+#     # csvWriter.writerow([tweet.id, tweet.date, tweet.text.encode('utf-8')])
+# csvFile.close()
 
 # from csv: grab the first tweet and last tweet (from the start and end date of a timeline)
 # we only need to get the tweet status ID
@@ -76,66 +77,28 @@ startTweet = int(csvFileList[0][0])
 endTweet = int(csvFileList[-1][0])
 
 print("startTweet: " + str(startTweet) + " | endTweet: " + str(endTweet))
+print("Length of list: " + str(len(csvFileList)))
 
-count_by = 5
-count_to_cutoff = count_by	# the number of tweets to chop off at the end of the csv
-stop = False
-while (len(new_tweets) > 0 and not stop):
-	print ("getting tweets before %s" % (oldest))
+id = int(csvFileList[0][0])
+tweet = api.get_status(id)
+original_tweet = api.get_status(tweet.in_reply_to_status_id)
+print(id)
 
-	#all subsiquent requests use the max_id param to prevent duplicates
-	new_tweets = api.user_timeline(screen_name = user_name,count=count_by,max_id=oldest)
+size = len(csvFileList)
 
-	for tweet in new_tweets:
-		if (tweet.id == endTweet):
-			stop = True
-			break
-		else:
-			print("tweet id: " + str(tweet.id))
-			count_to_cutoff = count_to_cutoff-1
-
-	# remove the tweets after the end time
-	if(count_to_cutoff > 0):
-		new_tweets = new_tweets[:-count_to_cutoff or None]
-
-	#save most recent tweets
-	alltweets.extend(new_tweets)
-
-	#update the id of the oldest tweet less one
-	oldest = alltweets[-1].id - 1
-	print("Oldest #: " + str(oldest))
-
-	print "...%s tweets downloaded so far" % (len(alltweets))
-	count_to_cutoff = count_by
-
-outtweets = []
-
-# remove the tweets before the start time (at the top of the csv)
-stop = False
-count_to_cutoff = 0
-
-for tweet in alltweets:
-	if (tweet.id == startTweet):
-		break
-	else:
-		count_to_cutoff = count_to_cutoff + 1
-
-if(count_to_cutoff > 0):
-	alltweets = alltweets[count_to_cutoff:]
-
-# this code is for testing
-# outtweets = [[tweet.id_str, tweet.created_at, tweet.in_reply_to_status_id] for tweet in alltweets]
-
-# transform the tweepy tweets into a 2D array that will populate the csv
-for tweet in alltweets:
-    try:
-        original_tweet = api.get_status(tweet.in_reply_to_status_id)
-        # outtweets.append([tweet.id_str, tweet.created_at, original_tweet.created_at, tweet.in_reply_to_status_id]) # use to debug
-        outtweets.append([tweet.created_at, original_tweet.created_at])
-        print(tweet.in_reply_to_status_id)
-    except Exception, e:
-        print("Exception")
-        pass
+# get tweet in_reply_to_status_id
+for i in range(0, size):
+	try:
+		id = int(csvFileList[i][0])
+		tweet = api.get_status(id)
+		original_tweet = api.get_status(tweet.in_reply_to_status_id)
+		# transform the tweepy tweets into a 2D array that will populate the csv
+		outtweets.append([tweet.created_at, original_tweet.created_at])
+	except Exception, e:
+		pass
+	if(i % 100 == 0):
+		print(i)
+print(outtweets)
 
 # write the csv
 # the resultant CSV file only contains the tweet reply date, and the original tweet date.
