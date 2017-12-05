@@ -36,6 +36,7 @@ api = tweepy.API(auth,wait_on_rate_limit=True)
 outtweets = []
 tweet_date = []
 original = []
+curr_tweet = []
 #######################################################################
 # INITIALIZE USERS, DATES, SEARCH QUERIES
 #######################################################################
@@ -76,9 +77,9 @@ for i in range(0, size):
 	for tweet in tweets:
 		try:
 			original_tweet = tweet.in_reply_to_status_id
-			outtweets.append([tweet.created_at,original_tweet])
+			curr_tweet.append([tweet.created_at,original_tweet])
 			original.append(original_tweet)
-			print("tweet id: " + str(tweet.id) + " created at: " + str(tweet.created_at) + " original_tweet: " + str(original_tweet))
+			# print("tweet id: " + str(tweet.id) + " created at: " + str(tweet.created_at) + " original_tweet: " + str(original_tweet))
 			# outtweets.append([tweet.created_at, original_tweet.created_at])
 		except Exception, e:
 			pass
@@ -103,7 +104,7 @@ for i in range(0, size):
 	for tweet in tweets:
 		try:
 			orig_date.append([tweet.id,tweet.created_at])
-			print("orig_date: " + str(tweet.created_at))
+			# print("orig_date: " + str(tweet.created_at))
 			# outtweets.append([tweet.created_at, original_tweet.created_at])
 		except Exception, e:
 			pass
@@ -112,19 +113,22 @@ for i in range(0, size):
 
 
 for i in range(0,len(orig_date)):
-
 	for j in range(0,len(orig_date)):
-		if(outtweets[i][1]==orig_date[j][0]):
-			outtweets[i].append(orig_date[j][1])
+		if(curr_tweet[i][1]==orig_date[j][0]):
+			del curr_tweet[i][1]
+			curr_tweet[i].append(orig_date[j][1])
+			# outtweets[i].append([curr_tweet[i][0], orig_date[j][1]])
+			# outtweets[i].append(orig_date[j][1])
 
+# get rid of the attributes with "None"
 things_to_remove = []
 for i in range(0,len(outtweets)):
-	if(len(outtweets[i]) == 2):
+	if(len(outtweets[i]) != 2):
 		things_to_remove.append(i)
 
 # delete the random blanks
 for i in sorted(things_to_remove, reverse=True):
-    del outtweets[i]
+    del curr_tweet[i]
 
 # get tweet status ID
 
@@ -155,4 +159,4 @@ for i in sorted(things_to_remove, reverse=True):
 with open('%s_tweets_replied_to.csv' % user_name, 'wb') as f:
 	writer = csv.writer(f)
 	# writer.writerow(["created_at","orig_created_at"])
-	writer.writerows(outtweets)
+	writer.writerows(curr_tweet)
