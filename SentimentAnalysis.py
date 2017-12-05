@@ -62,6 +62,7 @@ def get_sentiment_by_month(df):
     df['sentiment'] = df.apply(lambda x: get_tweet_sentiment(x['text']), axis=1)
     df['tweet_date'] = pd.to_datetime(df['tweet_date'])
     df['month_index'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.month
+    df['by_year'] = pd.to_datetime(df['tweet_date'], errors='coerce').dt.year
 
     df['by_month'] = df['month_index'].apply(lambda x: calendar.month_abbr[x])
     df.sort_values('month_index', inplace=True)
@@ -74,10 +75,13 @@ def get_sentiment_by_month(df):
     grouped = grouped.reindex(columns=sentiments)
 
     num_days = grouped.index.get_level_values('num_days')
+    num_days.values[10] = 57
+    print(num_days)
+
     i = 0
     for s in sentiments:
-        grouped[s] = grouped.apply(lambda x: x[s] / num_days[i], axis=1)
-        i = i + 1
+        grouped[s] = grouped[s]/num_days
+
 
     return grouped
 
@@ -135,8 +139,6 @@ def plot_num_per_month(source,df):
     if not df.empty:
         grouped = get_sentiment_by_month(df)
 
-        # total = len(grouped.axes[0])
-
         fig = grouped.plot.line(figsize=(16,9), title='Number of Tweets by Sentiment')
         plt.xticks(np.arange(12), calendar.month_abbr[1:13])
 
@@ -163,13 +165,6 @@ def sentiment_analysis():
         plot_sentiment_numbers(user,tweets)
         plot_sentiment_per_day(user,tweets)
         plot_num_per_month(user,tweets)
-
-    tweets =  pd.read_csv('datasets/' + users[0] + '_hashtags.csv', names=['tweet_date', 'text'],encoding='utf-8')
-    tweets = tweets[pd.notnull(tweets['text'])]
-
-    plot_sentiment_numbers("hastag_shawInternet",tweets)
-    plot_sentiment_per_day("hastag_shawInternet",tweets)
-    plot_num_per_month("hastag_shawInternet",tweets)
 
     tweets =  pd.read_csv('datasets/atShawHelp.csv', names=['tweet_date', 'text'],encoding='utf-8')
     tweets = tweets[pd.notnull(tweets['text'])]
