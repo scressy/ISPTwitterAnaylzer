@@ -23,5 +23,4 @@ To run outage analysis, ```console > python ShawOutages.py ```.
 
 To run word usage analysis, ```console > python WordFrequency.py ```.
 
-To get the average respons time, ```console > python GetResponseTime.py ```.
-
+To get the average response time, ```console > python AtShawAnalysis.py ```.
