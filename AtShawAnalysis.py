@@ -55,8 +55,14 @@ def get_response(df):
     df['delta'] = (df['created_at']-df['orig_created_at']).fillna(pd.to_timedelta("00:00:00"))
     df['delta'] = df['delta'].dt.total_seconds()
 
+    maxDelta = df.loc[df['delta'].idxmax()]
+    maxDeltaTime = timedelta(seconds=maxDelta['delta'])
+
+    print("***********************************************")
     print(df)
     print("Number of replies: " + str(len(df.index)))
+    print("Max delta: \n" + str(maxDelta))
+    print("maxDeltaTime: " + str(maxDeltaTime))
 
     # find the average
     mean = df['delta'].mean()
@@ -67,33 +73,31 @@ def get_response_range(df, start, end):
     df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
     df['orig_created_at'] = pd.to_datetime(df['orig_created_at'], errors='coerce')
 
-    # startDate = pd.to_datetime(start, format="%Y-%m-%d")
-    # endDate = pd.to_datetime(start, format="%Y-%m-%d")
-    #
-    # df.loc[startDate: endDate]
-    df.loc[df['created_at'] > '2017-10-27 00:00:00' : df['created_at'] < '2017-11-27 00:00:00']
-
+    startDate = pd.to_datetime(start, format="%Y-%m-%d")
+    endDate = pd.to_datetime(end, format="%Y-%m-%d")
+    mask = (df['created_at'] > startDate) & (df['created_at'] <= endDate)
+    df = df.loc[mask]
 
     # get rid of invalid date values (Nan, NaT, etc)
-    # df = df[df.orig_created_at.notnull()]
+    df = df[df.orig_created_at.notnull()]
 
-    # df = df[df['created_at'] < endDate and df['created_at'] > startDate]
-    # df = df[(df['created_at'] <= endDate)]
-    # in_range_df = df[df["created_at"].isin(pd.date_range("2017-11-15", "2017-11-27"))]
-
-
-    return df
     # getting the time delta and converting to day, hours, min, seconds
-    # df['delta'] = (df['created_at']-df['orig_created_at']).fillna(pd.to_timedelta("00:00:00"))
-    # df['delta'] = df['delta'].dt.total_seconds()
-    #
-    # print(df)
-    # print("Number of replies: " + str(len(df.index)))
-    #
-    # # find the average
-    # mean = df['delta'].mean()
-    # mean = timedelta(seconds=mean)
-    # return mean
+    df['delta'] = (df['created_at']-df['orig_created_at']).fillna(pd.to_timedelta("00:00:00"))
+    df['delta'] = df['delta'].dt.total_seconds()
+
+    maxDelta = df.loc[df['delta'].idxmax()]
+    maxDeltaTime = timedelta(seconds=maxDelta['delta'])
+
+    print("***********************************************")
+    print(df)
+    print("Number of replies: " + str(len(df.index)))
+    print("Max delta: \n" + str(maxDelta))
+    print("maxDeltaTime: " + str(maxDeltaTime))
+
+    # find the average
+    mean = df['delta'].mean()
+    mean = timedelta(seconds=mean)
+    return mean
 
 ################################################################################################
 # PLOT STUFF
@@ -121,6 +125,7 @@ def plot_volume_of_tweets(source,df):
 ################################################################################################
 
 users = ['ShawHelp','ShawInfo']
+# users = ['ShawHelp']
 startDate = '2017-10-27'
 endDate = '2017-11-27'
 
@@ -129,11 +134,13 @@ def volume_of_tweets():
     get_volume(tweets)
     plot_volume_of_tweets("at_shawHelp",tweets)
 
+# get average response time over the whole csv
 def response_time():
     for user in users:
         tweets =  pd.read_csv('datasets/%s_tweets_replied_to.csv' % user, names=['created_at', 'orig_created_at'],encoding='utf-8',skipinitialspace=True)
         print("Average response time from @" + user + ": " + str(get_response(tweets)))
 
+# used to get dataset for only one month (see dates above)
 def response_time_range():
     for user in users:
         tweets =  pd.read_csv('datasets/%s_tweets_replied_to.csv' % user, names=['created_at', 'orig_created_at'],encoding='utf-8',skipinitialspace=True)
@@ -141,4 +148,4 @@ def response_time_range():
 
 # volume_of_tweets()
 response_time()
-# response_time_range()
+response_time_range()
