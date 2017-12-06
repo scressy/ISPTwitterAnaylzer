@@ -39,6 +39,8 @@ original = []
 curr_tweet = []
 #######################################################################
 # INITIALIZE USERS, DATES, SEARCH QUERIES
+# Change user_name for the current account you want to run.
+# (It was too much of a hassle to run both users right after each other)
 #######################################################################
 users = ["ShawHelp", "ShawInfo"]
 user_name = users[0]
@@ -118,28 +120,18 @@ for i in range(0, size):
 	if(i % 5 == 0):
 		print(i)
 
-# append everything to
+# append everything to curr_tweets, so curr_tweets has both dates
 for i in range(0,len(curr_tweet)):
 	for j in range(0,len(orig_date)):
 		if(curr_tweet[i][1]==orig_date[j][0]):
+			# remove reply.id, we don't need it anymore
 			del curr_tweet[i][1]
 			curr_tweet[i].append(orig_date[j][1])
-
-# # get rid of the attributes with "None"
-# things_to_remove = []
-# for i in range(0,len(curr_tweet)):
-# 	if(len(curr_tweet[i]) != 2):
-# 		things_to_remove.append(i)
-#
-# # delete the random blanks
-# for i in sorted(things_to_remove, reverse=True):
-#     del curr_tweet[i]
-
 
 # write the csv
 # the resultant CSV file only contains the tweet reply date, and the original tweet date.
 # use this _tweets_replied_to csv for the response time-delta
-with open('datasets/%s_tweets_replied_to_weird_result.csv' % user_name, 'wb') as f:
+with open('datasets/%s_tweets_replied_to.csv' % user_name, 'wb') as f:
 	writer = csv.writer(f)
 	# writer.writerow(["created_at","orig_created_at"])
 	writer.writerows(curr_tweet)
